@@ -11,3 +11,5 @@ otherwise in the README for a particular project.  Any references to Leonardo
 DiCrapio, Peter Jackson, or how "the old Battlestar Galactica was soooo much 
 better than the new one (STARBUX IS A DUDE LOLWTF)" in commit messages, wiki 
 contributions, pull requests, or comments will result in a permaban.
+
+My github username is lame so I will take the severian folder as my own.
