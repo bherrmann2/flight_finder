@@ -1,0 +1,28 @@
+This is a VM and Assembler project for Notch's DCPU-16 computer.
+
+More information about the game can be found here: http://0x10c.com/
+And more information about DCPU-16 here: http://0x10c.com/doc/dcpu-16.txt
+
+This VM and assembler are not yet complete.  The assembler does not output the 
+correct compiled code for every case, and the VM has a few quirks too.  However,
+they are usable for small programs as of right now.  The test.asm program in
+the project's root directory is an example of a program that currently properly
+compiles.
+
+As mentioned in the dcpuvm.c source file, some of the VM code has been adapted 
+and/or copied from Brian Swetland in accordance with the BSD license.  
+
+His code along with the license can be found here: 
+    https://github.com/swetland/dcpu16/blob/master/emulator.c
+
+A few other notes:
+
+The VM is written in C, and currently requires GCC to compile.  The assembler is 
+written in Haskell and requires the GHC Haskell compiler and the Cabal tool to 
+properly compile.  If you have these programs installed and in your path, then 
+the MAKEFILE will handle building the executables and locating them in the root 
+directory of the project.
+
+Example usage:
+    ./dcpu-asm test.asm
+    ./dcpu-vm test.hex
