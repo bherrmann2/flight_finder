@@ -1,0 +1,5 @@
+nbproject/*
+dist/*
+*.hex
+*.bin
+*.exe

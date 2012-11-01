@@ -1,0 +1,17 @@
+LICENSE.txt
+README.txt
+setup.py
+vgraph\__init__.py
+vgraph\algorithms\__init__.py
+vgraph\algorithms\basic.py
+vgraph\algorithms\connected_components.py
+vgraph\algorithms\paths.py
+vgraph\algorithms\sort.py
+vgraph\data\__init__.py
+vgraph\data\gexceptions.py
+vgraph\data\primitives.py
+vgraph\data\storage.py
+vgraph\data\structs.py
+vgraph\data\index\__init__.py
+vgraph\data\index\hash.py
+vgraph\graph\__init__.py
