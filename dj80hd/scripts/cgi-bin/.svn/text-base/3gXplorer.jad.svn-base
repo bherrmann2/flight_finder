@@ -1,0 +1,23 @@
+Novarra-VScroll_Delay: 40
+MIDlet-Data-Size: 20480
+MIDlet-Version: 5.0
+MIDlet-Jar-Size: 221436
+MIDlet-Icon: midicon86x86.png
+MicroEdition-Configuration: CLDC-1.0
+MIDlet-Jar-URL: 3gXplorer.jar
+Novarra-Menu-Icon-Info: 2,2,45,58,56,43
+Novarra-Version: 5.2.17nokn71
+MIDlet-Name: 3gXplorer
+Novarra-BuyUrl: http://www.handango.com/minibrand/basket.jsp?addItem=121740&siteId=1149&continueUrl=http://www.novarra.com/nwebforzire71&logo=../minibrand/logos/NovarraLogoColor12.11.03.jpg&StyleSheetUrl=http://www.novarra.com/shopcart/h1_style.css
+Novarra-Page_Scroll_Delay: 500
+Novarra-First_Page_Scroll_Pause_Delay: 500
+Novarra-Device-Maker-ID: 2 NokiaN71
+MIDlet-1: 3gXplorer, /midicon86x86.png, com.novarra.j2me.browser.nWeb
+Novarra-HScroll_Delay: 0
+Novarra-Device-Model-ID: 4 n71
+Novarra-FeedbackUrl: http://www.nwebwireless.com/Feedback/IT/index.asp 
+Novarra-Key_Repeat_Detect_Delay: 800
+MIDlet-Permissions: javax.microedition.io.Connector.http, javax.microedition.io.Connector.https
+MicroEdition-Profile: MIDP-2.0
+MIDlet-Vendor: Novarra
+Novarra-Configuration: AcnSdfHost=stage.three.com.hk Host=h52.novarra.net Home=http://www.dj80hd.com AcnSdfHost=stage.three.com.hk adtime=15 KEY_REPEAT_DETECT_INTERVAL=500 HINT_BOX_LIFE=10000 DONT_SHOW_CNT=3 CLICK_CNT=5

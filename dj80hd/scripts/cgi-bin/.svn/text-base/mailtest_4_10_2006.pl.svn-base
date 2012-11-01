@@ -1,0 +1,55 @@
+#!/usr/bin/perl -w
+
+
+use CGI;
+$q = new CGI;
+
+$CONTENT_TYPE = "Content-type: text/html\n\n";
+$SENDMAIL = '/usr/lib/sendmail -f webform@wimkp.org';
+$VERSION = 10;
+print $CONTENT_TYPE;
+
+if ($q->param("to"))
+{
+  if (($q->param("to") =~ /novarra/i) || ($q->param("to") =~ /jason/i) || ($q->param("to") =~ /wisti/i) || ($q->param("to") =~ /scissorsoft/i))
+	{
+	#were ok
+	}
+	else
+	{
+	  print "ERROR: Unauthorized email address.  mail not sent.";
+		exit(0);
+	}
+ if( open(MAIL,"|$SENDMAIL -t"))
+ {
+   print MAIL getMail();
+   close(MAIL);
+	 print "This was piped to $SENDMAIL -t:<br>", getMail();
+	 print "<hr><a href=\"mailtest.pl\">AGAIN</a><hr>";
+ }
+ else
+ {
+  print "ERROR: Mail not sent !";
+ }
+}
+else
+{
+print "<form method=post>To:<input name=to value=werwath\@hotmail.com><br>From:<input name=from value=jwerwath\@novarra.com><br>Subject:<input name=subject value=foo><br>Message:<input name=msg value=bar><input type=submit value=Send></form>";
+}
+
+print "Done.  (version $VERSION)";
+
+
+sub getMail
+{
+$mail = "";
+$mail .= "To: ". $q->param("to") . "\n";
+$mail .= "From: ". $q->param("from") . "\n";
+$mail .= "Cc: jwerwath\@novarra.com\n";
+$mail .= "Subject:" . $q->param("subject") . "\n";
+$mail .= "\n\n";
+$mail .= $q->param("msg") . "\n\nThank you " . $q->param("to") .".  Questions or Comments ?  Please email Jim Werwath (jim\@scissorsoft.com)\n";
+#$mail .= "(version $VERSION) \n";
+return $mail;
+}
+

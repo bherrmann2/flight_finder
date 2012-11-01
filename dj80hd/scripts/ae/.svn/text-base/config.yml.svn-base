@@ -1,0 +1,12 @@
+aca: vision20.novarra.co.uk
+
+#Comma-seperated list of alphanumeric codes for customers (no whitespace)
+customer_ids: vfuk,3hk,3it,turkcell,eetg,any
+
+#Queue size is the maximum number of URLs per customer kept in the database at
+#any given time
+queue_size: 1000
+
+
+
+
