@@ -13,12 +13,12 @@ use strict;
 use URI;
 use URI::Escape;
 use LWP::UserAgent;
-use Getopt::Std;   
-use HTTP::Date;         
-use HTTP::Cookies;         
-use HTTP::Request;         
-use HTTP::Response;         
-use HTTP::Headers;          
+use Getopt::Std;
+use HTTP::Date;
+use HTTP::Cookies;
+use HTTP::Request;
+use HTTP::Response;
+use HTTP::Headers;
 use URI::URL;
 use MIME::Base64;
 
@@ -65,7 +65,7 @@ elsif ($action eq "download") {
       exit 1;
     }
     #Download a list of mp3 links
-    if ($input_filename) { 
+    if ($input_filename) {
       my @urls = filename2array($input_filename);
       download_links($dir,$ignore_filename,@urls);
     }
@@ -88,7 +88,7 @@ elsif ($action eq "download") {
     else {
       usage();
     }
-    
+
   }
   else {
     usage();
@@ -118,7 +118,7 @@ sub unescape {
     return $todecode;
 }
 
-# Do a simple HTTP get on a url and return the HTTP::Response object 
+# Do a simple HTTP get on a url and return the HTTP::Response object
 sub get_resp {
   my $url = shift;
   my $resp = $b->get($url);
@@ -160,7 +160,7 @@ sub download_links {
   my @urls = @_;
   debug("INPUT URL COUNT: " . ($#urls + 1));
   if ($ignore_filename) {
-    @urls = ignore_file($ignore_filename,@urls);                  
+    @urls = ignore_file($ignore_filename,@urls);
   }
   @urls = make_unique(@urls);
   debug("FILTERED  COUNT: " . ($#urls + 1));
@@ -173,13 +173,17 @@ sub download_links {
     my $resp;
     my $filename;
     my $error;
-    my $ct; 
+    my $ct;
     my $code;
     #FIXME - Make this more OO
     debug("RESPONSE SHOULD BE NULL") unless (!$resp);
     #e.g. http://www10.zippyshare.com/v/56979338/file.html
     if ($url =~ /zippyshare\.com/) {
       $resp = get_zippyshare_resp($url)
+    }
+    #e.g. http://www.tunescoop.com/play/313339353639/wrkd-chasing-money-original-mix-tss-exclusive-mp3
+    elsif ($url =~ /tunescoop.com/) {
+      $resp = get_tunescoop_resp($url);
     }
     #e.g. http://www.zshare.net/audio/6607486487c5b1d1/
     elsif ($url =~ /zshare\.net/) {
@@ -204,13 +208,13 @@ sub download_links {
       $code = $resp->code();
       $ct = $resp->content_type();
       $error = "BAD YOUTUBE $code $ct" unless ($code == 200 && $ct eq "video/mp4");
-      
+
     }
     else {
       $resp = $b->get($url);
     }
-   
-  
+
+
     if (!$error) {
       if ($resp) {
         $error = save_file($url,$resp,$dir,$filename);
@@ -225,7 +229,7 @@ sub download_links {
       $error_count += 1;
     }
     my $msg = ($error) ? $error . "(" . $url . ")" : "OK (" . $url . ")";
-    
+
     #let the user know what is going on...
     debug ($msg);
 
@@ -236,7 +240,7 @@ sub download_links {
     sleep $SLEEP_TIME;
 
     $count += 1;
-  }#foreach 
+  }#foreach
 
   debug("FAILED URLS:\n" . join("\n",@failedurls)) unless ($#failedurls<0);
   if (open(FAILED,">>failed.txt")) {
@@ -285,7 +289,7 @@ sub getlinks {
   array2filename($output_filename,@links) unless (!$output_filename);
   return @links;
 }
-  
+
 #
 # Takes as input
 # - a filename of urls to ignore (format is newline sperated list of urls)
@@ -295,7 +299,7 @@ sub getlinks {
 #
 sub ignore_file {
   my $ignore_filename = shift;
-  my @links = @_;       
+  my @links = @_;
   return @links unless -e $ignore_filename;
   my @links_to_ignore = filename2array($ignore_filename);
   debug("FILTERING " . $#links_to_ignore . " URLS.");
@@ -317,7 +321,7 @@ sub ignore_file {
   }
   return @newlinks;
 } #ignore_file
-  
+
 sub make_unique {
   my @a = @_;
   my %seen = ();
@@ -335,7 +339,7 @@ sub get_links_from_urls {
     my @links = get_links_from_url($url);
     foreach my $link (@links) {
       push @a,$link;
-    } 
+    }
   }
   return @a;
 }#get_links_from_urls
@@ -353,11 +357,13 @@ sub get_links_from_url {
   debug("Requesting content for $topurl");
   my $resp = $b->get($topurl);
   my $content = $resp->content();
+  $content =~ s/</\n</;
   debug("Got resp content for $topurl");
   #debug($content);
-  #debug("Got resp content for $topurl\n$content");
+  debug("Got resp content for $topurl\n$content");
   my @hrefs = ();
   while ($content =~ m/href=\"(.*?)\"/gi) {push @hrefs,$1;}
+  while ($content =~ m/href="([^"]+)"/gi) {push @hrefs,$1;}
   while ($content =~ m/<param name=\"src\" value=\"(.*?)\"/gi) {push @hrefs,$1;}
   while ($content =~ m/<param name=\"movie\" value=\"(.*?)\"/gi) {push @hrefs,$1;}
   while ($content =~ m/path=\"(.*?)\"/gi) {push @hrefs,$1;}
@@ -365,9 +371,10 @@ sub get_links_from_url {
   while ($content =~ m/href=([-_.!~*'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)/gi) {push @hrefs,$1;}
   foreach my $href (@hrefs)
   {
+    print "---$href---\n";
   	my $abs = URI->new_abs($href,$topurl);
-    
-    #Handle crappy urls like 
+
+    #Handle crappy urls like
     #http://www.noiseporn.com/audio/http://www.spreadthenoise.com/audio/jp/07%20Facemelter%20Live.mp3
     my $second_http = index($abs,"http://",1);
     if ($second_http > 0) {
@@ -390,6 +397,9 @@ sub get_links_from_url {
     elsif ($abs =~ /zippyshare\.com\/\S+.html/) {
 	  	push @sample_urls, $abs;
     }
+    elsif ($abs =~ /tunescoop\.com\/\S+/) {
+	  	push @sample_urls, $abs;
+    }
     elsif ($abs =~ /sendspace\.com\/file\/\S+/) {
 	  	push @sample_urls, $abs;
     }
@@ -402,14 +412,14 @@ sub get_links_from_url {
     elsif ($abs =~ /^http:\/\/(\S+)\.mp3$/) {
 	  	push @sample_urls, $abs;
     }
-  	
+
   }
   return make_unique(@sample_urls);
 }#get_links_from_url
 
 
 #
-# Returns 0 if file successfully saved 
+# Returns 0 if file successfully saved
 #
 sub save_file {
   my $ret = 0;
@@ -424,7 +434,7 @@ sub save_file {
   }
   my $MINLEN = 700000;
   my $ct = $resp->content_type();
- 
+
   #First find the filename
   #Choices are in this order
   # 1. Filename from the content-disposition header.
@@ -436,7 +446,7 @@ sub save_file {
   if ($filename && ($filename =~ /^=\?UTF-8\?B\?(\S+)\?=$/)) {
     $filename = decode_base64($1);
     #$filename =~ s/\s+/_/g;
-  } 
+  }
   $filename = "unknonwn_" . time . ".mp3" unless ($filename);
   if ($ct eq "application/octet-stream" || $ct eq "audio/mpeg" || $ct eq "application/x-download") {
     #we are ok.
@@ -463,7 +473,7 @@ sub save_file {
     return $ret;
   }
   if (!$resp->is_success) {
-    $ret = "ERROR 2002: Unexpected code " . $resp->code() . " for url $url";         
+    $ret = "ERROR 2002: Unexpected code " . $resp->code() . " for url $url";
     return $ret;
   }
   #Now save it.
@@ -492,8 +502,8 @@ sub url2filename {
 	#url decode
   $str =~ s/\%([A-Fa-f0-9]{2})/pack('C', hex($1))/seg;
 	#just incase
-	$str =~ s/\//_/g;                                      
-	$str =~ s/ /_/g;                                      
+	$str =~ s/\//_/g;
+	$str =~ s/ /_/g;
 	return $str;
 } #get_wav_file_name
 
@@ -558,17 +568,17 @@ sub all_links_on_blogspot_blog {
   my $blogname = shift;
   #
   # Exploit the format of searching a date range on the blog:
-  # e.g. 
+  # e.g.
   # http://trashbagskids.blogspot.com/search?updated-min=2001-01-01T00%3A00%3A00%2B11%3A00&updated-max=2010-01-01T00%3A00%3A00%2B11%3A00&max-results=44444
   my $url = "http://" . $blogname . ".blogspot.com/search?updated-min=2000-01-01T00%3A00%3A00%2B11%3A00&updated-max=" . today_as_blogspot_string() . "T00%3A00%3A00%2B11%3A00&max-results=44444";
-  return get_links_from_url($url); 
+  return get_links_from_url($url);
 }
 
 sub usage {
    print <<USAGE;
 
  The first step is to harvest all the links to media files from the blog
- perl $0 -a getlinks -b <blog_name> -o <output_file> 
+ perl $0 -a getlinks -b <blog_name> -o <output_file>
  perl $0 -a getlinks -u <url> -o <output_file>
  perl $0 -a getlinks -l <url_list_file> -o <output_file>
  where
@@ -582,13 +592,13 @@ sub usage {
    perl $0 -a getlinks -b discodust -o links.txt
    perl $0 -a getlinks -u http://teenagekicsusa.com -o links.txt
    perl $0 -a getlinks -l url_list.txt -o links.txt
- 
+
  perl $0 -a download -i input_file -d directory_for_files -x ingnore_file
-   -a (action) download instructs the script to download mp3s    
-   -u (url) URL to scrape for mp3 links and download these                
+   -a (action) download instructs the script to download mp3s
+   -u (url) URL to scrape for mp3 links and download these
    -l (url_list_file) instead of a blog or a url, you can load a text file of
       urls and scrape all of them.
-   -i (input_file) a file of links to download.  This is the same filename as 
+   -i (input_file) a file of links to download.  This is the same filename as
       output_file after you run the first command.
    -d is the directory of where the downloaded files should be placed.
    -x (ignore_file) a file of links that should be ignored.  If this file
@@ -612,8 +622,8 @@ sub usage {
 
    * 3.
    * Scrape all the blog urls in blogs.txt and extract all of the urls on
-   * each of them that are not found in harvested.txt.  Download all the 
-   * files to the current directory. 
+   * each of them that are not found in harvested.txt.  Download all the
+   * files to the current directory.
    perl $0 -a download -l blogs.txt -d . -x harvested.txt
 
    * 4.
@@ -622,7 +632,7 @@ sub usage {
    * it in the current directory.
    perl $0 -a test -u http://www.zshare.net/download/65743488946614db/ -d .
 
-   * 5. 
+   * 5.
    * Download all the links from http://molasuperpoco.com and print to STDOUT
    perl $0 -a getlinks -u http://molasuperpoco.com
 USAGE
@@ -688,13 +698,13 @@ sub get_mediafire_resp {
   debug("Could not get mediafire url for code $code") unless ($link_enc);
   return unless ($link_enc);
   return get_resp($link_enc,$cookies);
-}#get_mediafire_resp 
- 
+}#get_mediafire_resp
+
 
 sub get_downloadable_mediafire_url_for_code {
   my $code = shift;
   my $first_url = "http://www.mediafire.com/?" . $code;
-  my $second_url = "";                                    
+  my $second_url = "";
   my $resp = $b->get($first_url);
   my $content = $resp->content();
   #href="http://download59.mediafire.com/4cdfa246003g/ljwzz0mikyi/The+Living+%28Mighty+Mouse+Remix%29.mp3"> Click here to start download
@@ -704,7 +714,7 @@ sub get_downloadable_mediafire_url_for_code {
   }
   else {
     debug("FAILED MATCH 1 on " . $content);
-    return;      
+    return;
   }
 }#get_downloadable_mediafire_url_for_code
 #GET /dynamic/download.php?qk=ljwzz0mikyi&pk=32226cd833f1592705996eb03f624a5b6af6f33099e5caea177c265926fb07c623580e2acaea68d77424dc0fd57493c8&r=aw3zd HTTP/1.1
@@ -718,7 +728,7 @@ sub get_box_resp {
 
   my $url = shift;
   return unless ($url);
-  
+
   # Create a request
   my $req = HTTP::Request->new(GET => $url);
 
@@ -734,7 +744,7 @@ sub get_box_resp {
   # The line we are looking for looks like this:
   # e.g. http://www.box.net/index.php?rm=box_download_shared_file&file_id=f_655240213&shared_name=8d1ztf6140
   #
-  # 
+  #
   if ($content =~ /href="(http:\/\/www\.box\.net\/index\.php\?rm=box_download_shared_file\S+shared_name=\S+)"/m) {
     my $actual_url = $1;
     $actual_url =~ s/&amp;/&/g;
@@ -752,11 +762,11 @@ sub get_box_resp {
 sub get_zshare_resp {
   my $url = shift;
   return unless ($url);
-  
+
   #Switch any audio zshare links to download.
   $url =~ s/\/audio\//\/download\//;
-  
-  #Get the content 
+
+  #Get the content
 
   # Create a request (zshare expects a post to the url with download=1 data
   my $req = HTTP::Request->new(POST => $url);
@@ -774,9 +784,9 @@ sub get_zshare_resp {
   #
   # The line we are looking for looks like this:
   # var link_enc=new Array('h','t','t','p',':','/','/','6','9','.','8','0','.','2',' 5','4','.','1','7','9','/','d','o','w','n','l','o','a','d','/','4','2','0','a',' 4','7','6','2','c','c','f','7','e','f','2','f','7','c','1','0','9','2','e','3',' f','1','d','8','f','7','e','7','/','1','2','1','3','0','3','5','8','6','4','/',' 1','3','2','2','4','2','8','3','/','c','e','p','i','-','%','2','0','c','o','c',' o','t','t','e','%','2','0','i','n','%','2','0','m','y','%','2','0','h','e','a',' d','.','m','p','3');link = '';for(i=0;i<link_enc.length;i++){link+=link_enc[i];}
-  # 
+  #
   if ($content =~ /var link_enc=new Array\((\S+)\)/m) {
-    my $downloadable_url = "";             
+    my $downloadable_url = "";
     my $link_enc = $1;
     $link_enc =~ s/,//g;
     $link_enc =~ s/'//g;
@@ -796,7 +806,7 @@ sub get_sendspace_resp {
   my $download_url;
   my $resp = $b->post($url,['download' => '&nbsp;REGULAR DOWNLOAD&nbsp;']);
   my $content = $resp->content();
-  #<a id="downlink" class="mango" href="http://fs11n3.sendspace.com/dl/1ca61c2536f218a55628b49ea29a54ae/4abbaa5e0373dce5/70vebf/Slyde%20DJ%20mix.zip"   
+  #<a id="downlink" class="mango" href="http://fs11n3.sendspace.com/dl/1ca61c2536f218a55628b49ea29a54ae/4abbaa5e0373dce5/70vebf/Slyde%20DJ%20mix.zip"
   if ($content =~ /<a id="downlink" class="mango" href="(\S+)"/) {
     # e.g. $second_url looks something like this
     #http://fs11n3.sendspace.com/dl/1ca61c2536f218a55628b49ea29a54ae/4abbaa5e0373dce5/70vebf/Slyde%20DJ%20mix.zip
@@ -821,7 +831,7 @@ sub get_youtube_resp {
 #
 # Then foloow the redirect.
 # http://v1.lscache4.c.youtube.com/videoplayback?ip=0.0.0.0&sparams=id%2Cexpire%2Cip%2Cipbits%2Citag%2Calgorithm%2Cburst%2Cfactor&fexp=901803&algorithm=throttle-factor&itag=18&ipbits=0&burst=40&sver=3&expire=1262905200&key=yt1&signature=5B01FDB5244F57C2471403781DC4A8E2E2E9F7C9.2F03FD6C0D725FCC86F9E3DF380DF42977BCBFFC&factor=1.25&id=74c1f46c77a244d8
-# 
+#
 
   my $url = shift;
   my $easyyoutube_url;
@@ -830,11 +840,115 @@ sub get_youtube_resp {
   if ($url =~ /v=(\w+)$/) {
     $easyyoutube_url = "http://www.easyyoutube.com/download/" . $1 . "/";
     $easyyoutube_download_url = "http://www.easyyoutube.com/download.php?id=" . $1 . "&action=download&type=18&btget=Download";
-  } 
+  }
   my $resp = $b->get($easyyoutube_url); #get cookies if we need em
   $resp = $b->get($easyyoutube_download_url,'Referer' => $easyyoutube_url); #get cookies if we need em
   my $ct = $resp->content_type();
   #MAKE SURE IT IS "video/mp4";
   #debug("code: " . $resp->status_line() . " " . $resp->content_type( ));
   return $resp;
+}#end sub
+
+
+##########################################################################
+############################ TUNESCOOP ###################################
+##########################################################################
+# Example
+# http://www.tunescoop.com/play/313339353639/wrkd-chasing-money-original-mix-tss-exclusive-mp3
+#
+#returns a resp that can be saved off...
+sub get_tunescoop_resp {
+  my $url = shift;
+  my $b = LWP::UserAgent->new();
+
+
+  my $cookie_jar = HTTP::Cookies->new;
+  $b->cookie_jar($cookie_jar);
+
+  #Handle redirect manually to get proper referrer
+  my $ua = LWP::UserAgent->new(requests_redirectable => []);
+
+  my $resp = $b->get($url);
+  my $content = $resp->content();
+
+  #Find the first download button.
+  # It looks like
+  # <form name="dform" id="dform" method="post" action=""><div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='e3903ce91500107f37501970f8285ab7' /></div>
+  if ($content =~ /<form name="dform" id="dform" method="post" action="">.*name='(\S+)' value='(\S+)'/) {
+    my $dl_name = $1;
+    my $dl_value = $2;
+
+    #Prepare a POST with what we found
+    my $ref = $url;
+    $resp = $b->post( $url,[$dl_name => $dl_value, 'dl' => '1']);
+    $content = $resp->content();
+
+    #We expect a redirect here to set cookies.  FIXME - Check it
+    my $loc = $resp->header('Location');
+    $resp = $b->get( $loc,'Referer' => $url);
+
+    #The next and final button has a generated hash and timestamp that does
+    #an ajax request to set more cookies.
+    $content =  $resp->content;
+    # e.g. 'hash': "8be929149b6a63e26a6e1f26494613ed"
+    if ($content =~ /'hash': "(\S+)"/) {
+
+
+      #simulate ajax request
+      $resp = $b->post($loc,['time' => time(), 'hash' => $1]);
+
+      #Then this form is invoked with javascript, so mock this up.
+      #-----------------------------------------------------------
+#<form name="dform" id="dform" method="post" action="http://streams9.tunescoop.com">
+      #$action = ""; $cid = ""; $cdt =""; $token =""; $hash=""; $filename ="";
+#        <form name="dform" id="dform" method="post" action="http://streams9.tunescoop.com">
+#            <input type="hidden" name="cid" value="313339353639" />
+#            <input type="hidden" name="token" value="BQMxr5hScd5dGaHlcP35u9EalFsTqcqsWWYC/C9PcITRC5F3Agbm+Om4YGO1wb9xHBAVpEwvxn2z
+#zMfe6T7feYSxZ9vzL83fsEgc+bwb47t5jzabi4NrWQ==
+#" />
+#            <input type="hidden" name="cdt" value="c3c472e897ff28c74e4c0cf3688a4708" />
+#            <input type="hidden" name="hash" value="ac747f247055bf01eaaf7c3d626b506b" />
+#            <input type="hidden" name="filename" value="WRKD - Chasing Money (Original Mix) [TSS Exclusive].mp3" />
+#        </form>
+
+      my $action; my $cid; my $token; my $cdt; my $hash; my $filename;
+      if ($content =~ /<form name="dform" id="dform" method="post" action="(\S+)"/) {
+        $action = $1;
+      }
+      if ($content =~ /<input type="hidden" name="cid" value="(\S+)"/) {
+        $cid = $1;
+      }
+      if ($content =~ /<input type="hidden" name="token" value="([^"]+)"/) {
+        $token = $1;
+      }
+      if ($content =~ /<input type="hidden" name="cdt" value="(\S+)"/) {
+        $cdt = $1;
+      }
+      if ($content =~ /<input type="hidden" name="hash" value="(\S+)"/) {
+        $hash = $1;
+      }
+      if ($content =~ /<input type="hidden" name="filename" value="([^"]+)"/) {
+        $filename = $1;
+      }
+
+      #FIXME - Break out if none of these are set.
+      #print "\n---cid => $cid, token => $token, cdt => $cdt, hash => $hash, filename => $filename,'Referer' => $loc";
+
+      $resp = $b->post( $action,['cid' => $cid, 'token' => $token, 'cdt' => $cdt, 'hash' => $hash,
+      'filename' => $filename],'Referer' => $loc);
+      #print $resp->headers_as_string;
+      return $resp;
+    }
+    else {
+      print "\n>>>NO HASH FOR YOU\n";
+    }
+
+
+
+
+  }
+  else {
+    print ">>>FAILED MATCH CONTENT:\n" ;
+    return;
+  }
 }#end sub
