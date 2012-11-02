@@ -182,8 +182,16 @@ sub download_links {
       $resp = get_zippyshare_resp($url)
     }
     #e.g. http://www.tunescoop.com/play/313339353639/wrkd-chasing-money-original-mix-tss-exclusive-mp3
-    elsif ($url =~ /tunescoop.com/) {
+    elsif ($url =~ /tunescoop\.com/) {
       $resp = get_tunescoop_resp($url);
+    }
+    #e.g. http://soundowl.com/track\/2jvl/excision-ft-liquid-stranger-lets-get-to-the-point-rekoil-remixmp3
+    elsif ($url =~ /soundowl\.com\/track\//) {
+      $resp = get_soundowl_resp($url)
+    }
+    #e.g. /track\/2jvl/excision-ft-liquid-stranger-lets-get-to-the-point-rekoil-remixmp3
+    elsif ($url =~ /\/track\/\S+/) {
+      $resp = get_soundowl_resp("http://soundowl.com" . $url)
     }
     #e.g. http://www.zshare.net/audio/6607486487c5b1d1/
     elsif ($url =~ /zshare\.net/) {
@@ -400,6 +408,9 @@ sub get_links_from_url {
     elsif ($abs =~ /tunescoop\.com\/\S+/) {
 	  	push @sample_urls, $abs;
     }
+    elsif ($abs =~ /soundowl\.com\/track\/\S+/) {
+	  	push @sample_urls, $abs;
+    }
     elsif ($abs =~ /sendspace\.com\/file\/\S+/) {
 	  	push @sample_urls, $abs;
     }
@@ -417,6 +428,28 @@ sub get_links_from_url {
   return make_unique(@sample_urls);
 }#get_links_from_url
 
+
+sub get_filename_from_resp {
+  my $r = shift;
+  my $cd;
+  my $fn;
+  #Content-Disposition: attachment; filename='Excision ft. Liquid Stranger - Let's Get To The Point (Rekoil Remix).mp3
+
+  #On some versions gives
+  # Can't locate object method "filename" via package "HTTP::Headers" ...
+  eval {return $r->filename};
+  if ($@) {
+    if ($r->header('Content-Disposition')) {
+      $cd = $r->header('Content-Disposition');
+      if ($cd =~ /filename=(.*)/) {
+        $fn = $1;
+        $fn =~ s/\s+/\_/gi;
+        return $fn
+      }
+    }
+    return;
+  }
+}# get_filename_from_resp
 
 #
 # Returns 0 if file successfully saved
@@ -439,9 +472,11 @@ sub save_file {
   #Choices are in this order
   # 1. Filename from the content-disposition header.
   # 2. Filename from the url itself.
-  if (!$filename && ($resp->filename && ($resp->filename . "" ne "null")) && ($resp->filename . "" ne "")) {
-    $filename = $resp->filename;
-  }
+  #if (!$filename && ($resp->filename && ($resp->filename . "" ne "null")) && ($resp->filename . "" ne "")) {
+  #  $filename = $resp->filename;
+  #}
+  my $filename = get_filename_from_resp($resp);
+
   #filename==?UTF-8?B?Sm9obm55IE1ha2VyIC0gU3VucmlzZSAtIEx1a2EgRCBFbGVjdHJvIEhvdXNlIE1peC5tcDM=?=
   if ($filename && ($filename =~ /^=\?UTF-8\?B\?(\S+)\?=$/)) {
     $filename = decode_base64($1);
@@ -848,6 +883,70 @@ sub get_youtube_resp {
   #debug("code: " . $resp->status_line() . " " . $resp->content_type( ));
   return $resp;
 }#end sub
+
+
+
+
+##########################################################################
+############################ SOUNDOWL  ###################################
+##########################################################################
+sub get_soundowl_resp {
+  my $url = shift;
+  my $cookie_jar = HTTP::Cookies->new;
+  $b->cookie_jar($cookie_jar);
+  $b = LWP::UserAgent->new(requests_redirectable => []);
+
+  my $resp = $b->get($url);
+  #print ">>>COOKIES:" . $cookie_jar->as_string() . "\n" unless (!$command_line_mode);
+  my $content = $resp->content();
+
+  #Find the first download button.
+  # It looks like
+  # <a href="http://dl.soundowl.com/2jvl.mp3"><button class="btn success">Download</button></a>
+  if ($content =~ /<a href="([^"]+)"><button class="btn success">Download<\/button>/) {
+
+    my $loc;
+    my $mp3_url = $1;
+    my $ref = $url;
+    my $resp = $b->get($mp3_url);
+    if ($resp->header('Content-Disposition')) {
+      return $resp;
+    }
+    elsif ($resp->header('Location')) {
+      $loc = $resp->header('Location');
+    }
+    else {
+      #ERROR
+      return;
+    }
+    print $loc;
+    $resp = $b->get( $loc,'Referer' => $url);
+
+    # e.g.
+    #HTTP/1.1 200 OK
+    #Server: nginx/1.3.2
+    #Date: Fri, 02 Nov 2012 10:51:08 GMT
+    #Content-Type: text/html
+    #Last-Modified: Fri, 06 Jan 2012 14:54:47 GMT
+    #Content-Disposition: attachment; filename='Excision ft. Liquid Stranger - Let's Get To The Point (Rekoil Remix).mp3
+    #Expires: Sat, 02 Nov 2013 10:51:08 GMT
+    #Cache-Control: max-age=31536000
+    #X-Cache: hit
+    #x-xloc: 2
+    #Accept-Ranges: bytes
+    #Content-Length: 10977615
+    #Proxy-Connection: Keep-Alive
+    #Connection: Keep-Alive
+    #Age: 279
+    return $resp;
+
+  }
+  else {
+    print ">>>FAILED MATCH CONTENT:\n";
+    return;
+  }
+}#end sub
+
 
 
 ##########################################################################
