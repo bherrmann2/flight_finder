@@ -1,0 +1,15 @@
+set x "This is line 1\n"
+append x "This is line 2\n"
+append x "   Status    \n"
+append x "1.2.3.44  down\n"
+append x "6.6.6.66   up\n"
+append x "7.3.22.1   up\n"
+append x "    2/3      \n"
+append x "last line    \n"
+
+set m [regexp -all -inline -line {\d+\.\d+\.\d+\.\d+\s+\w+} $x]
+puts $m
+set m [regexp -all -inline -line {(\d+\.\d+\.\d+\.\d+)\s+(\w+)} $x]
+puts $m
+set m [regexp -all -inline -line {\s+(\d+\/\d+)\s+} $x]
+puts $m
