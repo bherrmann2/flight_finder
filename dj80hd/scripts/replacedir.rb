@@ -4,6 +4,7 @@ require "fileutils"
 
 #
 # 22 jan 2009 jwerwath    Original based on mergedir_zeb.
+# 05 jan 2013 jwerwath    Add keep_existing param and comment
 # FIXME - Use a try catch for each copy.
 #
 #
@@ -17,6 +18,9 @@ if (ARGV.length < 2)
   puts "USAGE: ruby #{$0} <source_dir> <target_dir>"
   puts " e.g.  ruby #{$0} c:\\tmp1 c:\\tmp2"
   puts ""
+  puts "Note: to avoid changing anything that exists 'keep_existing' parameter:"
+  puts " e.g.  ruby #{$0} c:\\tmp1 c:\\tmp2 keep_existing"
+  puts ""
   puts "Note: to avoid deleting anything add a 'nodelete' parameter:"
   puts " e.g.  ruby #{$0} c:\\tmp1 c:\\tmp2 nodelete"
   puts ""
@@ -27,7 +31,11 @@ end
 
 dir1 = ARGV[0]
 dir2 = ARGV[1]
-nodelete = ARGV[2]
+
+switches = []
+if (ARGV.length > 2)
+  switches = ARGV[2..ARGV.length]
+end
 
 interrupted = false
 errorlog = "";
@@ -59,41 +67,54 @@ Find.find(dir1) do |f|
     absolute_pathname_for_dir2_file = f.gsub(dir1,dir2)
     mtime_for_dir1_file = File.new(absolute_pathname_for_dir1_file).mtime
 
+    #--- FILE EXISTS IN BOTH PLACES
+    #------------------------------
     if (File.exists?(absolute_pathname_for_dir2_file) && !File.directory?(absolute_pathname_for_dir2_file))
 
-      #Get the mtime for dir2 file
       mtime_for_dir2_file = File.new(absolute_pathname_for_dir2_file).mtime
-      
+     
+      #--- FILES EXIST IN BOTH PLACES AND HAVE SAME SIZE     
+      #----------------------------------------------------- 
       if (File.size(absolute_pathname_for_dir1_file) == File.size(absolute_pathname_for_dir2_file))
-        #--- CASE 1: BOTH FILES EXIST AND ARE IDENTICAL - DO NOTHING EXCEPT FOR M3U ---
-        #FIXME - We are assuming here that the same bite size means the same
-        #FOR M3U - overwrite if the contents are different and newer...
-	  #&& (!File.identical?(absolute_pathname_for_dir1_file, absolute_pathname_for_dir2_file))
-	      if ((mtime_for_dir1_file > mtime_for_dir2_file) && (!File.compare(absolute_pathname_for_dir1_file, absolute_pathname_for_dir2_file)))
+        #--- FILES BOTH EXIST, SAME SIZE, FIRST FILE IS NEWER
+        #----------------------------------------------------
+	if ((mtime_for_dir1_file > mtime_for_dir2_file) && (!File.compare(absolute_pathname_for_dir1_file, absolute_pathname_for_dir2_file)))
           File.copy(absolute_pathname_for_dir1_file,absolute_pathname_for_dir2_file)
+          #--- * CASE 1: FILE EXISTS IN BOTH PLACES, DIR 1 is NEWER
+          #--------------------------------------------------------
           puts "[OVERWRITTEN because it is older and different but same size ]" + absolute_pathname_for_dir2_file + " (" + file_count.to_s + ")"
+        #--- * CASE 2: FILE EXISTS IN BOTH PLACES, DIR 2 is NEWER OR SAME
+        #----------------------------------------------------------------
         else
-          puts "[IDENTICAL]" + absolute_pathname_for_dir2_file + " (" + file_count.to_s + ")" unless (nodelete != "same")
+          #Only let user know if they specified the same switch
+          puts "[IDENTICAL Size and Same if not newer]" + absolute_pathname_for_dir2_file + " (" + file_count.to_s + ")" unless (!switches.include?("same"))
         end 
               #
-      else #FILES ARE OF DIFFERENT SIZE !
+      #--- FILES BOTH EXIST BUT ARE OF DIFFERENT SIZE !
+      #------------------------------------------------
+      else 
         bs = (File.size(absolute_pathname_for_dir1_file) > File.size(absolute_pathname_for_dir2_file)) ? "smaller" : "bigger"
 
-        #if dir1 file newer than dir2
-	      if (mtime_for_dir1_file > mtime_for_dir2_file)
-          #--- CASE 2: BOTH FILES EXIST AND DIR2 (TARGET) FILE OLDER - OVERWRITE DIR2 ---
+        #--- FILES BOTH EXIST BUT ARE OF DIFFERENT SIZE DIR 2 is OLDER!
+        #--------------------------------------------------------------
+	if (mtime_for_dir1_file > mtime_for_dir2_file)
+          #--- * CASE 3 * BOTH FILES EXIST AND DIR2 (TARGET) FILE OLDER - 
+          #--- OVERWRITE DIR2 ---
           #puts "[EXISTS and is newer]" + absolute_pathname_for_dir1_file
           File.copy(absolute_pathname_for_dir1_file,absolute_pathname_for_dir2_file)
-          puts "[OVERWRITTEN (#{bs} & older and different size)]" + absolute_pathname_for_dir2_file + " (" + file_count.to_s + ")"
+          puts "[OVERWRITTEN (#{bs} & older)]" + absolute_pathname_for_dir2_file + " (" + file_count.to_s + ")"
 
         elsif (mtime_for_dir2_file > mtime_for_dir1_file) #otherwise dir2 file is newer...
+          #--- * CASE 4 * BOTH FILES EXIST AND DIR2 (TARGET) FILE NEWER - 
+          #--- LEAVE DIR2 ---
           puts "[EXISTS (#{bs} & newer)]" + absolute_pathname_for_dir2_file + " (" +file_count.to_s + ")"
         else
-          puts "[EXISTS (different size but same age ?)]" + absolute_pathname_for_dir2_file + " (" + file_count.to_s + ")"
-        end #if (mtime_for_dir1_file > mtime_for_dir2_file)
-      end #if (File.size(absolute_pathname_for_dir1_file) == File.size(absolute_pathname_for_dir2_file))
+          #--- This should NEVER HAPPEN
+          puts "[UNEXPECTED (different size but same age ?)]" + absolute_pathname_for_dir2_file + " (" + file_count.to_s + ")"
+        end 
+      end 
 
-    #--- CASE 3: DIR2 FILE DOES NOT EXIST - CREATE IT ---                    
+    #--- CASE 5: DIR2 FILE DOES NOT EXIST - CREATE IT ---                    
     else
       #Directory where the dir2 file will go
       absolute_directory_for_dir2_file = absolute_pathname_for_dir2_file.gsub(/#{Regexp.escape(File.basename(absolute_pathname_for_dir2_file))}$/,'')
@@ -120,7 +141,9 @@ Find.find(dir1) do |f|
 end #find
 
 #FIXME - Have to remove empty directories.
-if (nodelete != "nodelete")
+
+#Unless user has specified the nodelete switch, remove all files.
+if (!switches.include?("nodelete"))
   Find.find(dir2) do |f|
     niceexit(errorlog) unless (!interrupted)
     if (File.exists?(f))
