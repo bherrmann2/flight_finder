@@ -13,3 +13,13 @@ set m [regexp -all -inline -line {(\d+\.\d+\.\d+\.\d+)\s+(\w+)} $x]
 puts $m
 set m [regexp -all -inline -line {\s+(\d+\/\d+)\s+} $x]
 puts $m
+
+
+puts "HERE"
+set x grm-1.1.1-linux.x86_64.rpm
+set m [regexp -inline {([\d|\.]+)-linux} $x]
+puts $m
+puts "HERE"
+set x grm-1.1.1.x86_64.rpm
+set m [regexp -inline {([\d|\.]+)-linux} $x]
+puts $m
