@@ -23,4 +23,9 @@ function assert_process() {
    fi
 }
 
-
+#takes comand as input
+#sets global cmd_output as output
+function get_cmd_output() {
+  cmd=$1
+  cmd_output=`$cmd`
+}
