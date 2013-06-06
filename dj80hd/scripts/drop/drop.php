@@ -93,8 +93,9 @@ function code_to_file($code)
 
 function no_action()
 {
-  #error_exit(400,"No action");
-  echo "HI";
+  header('Content-Type: text/plain');
+  header('Content-Disposition: attachment; filename="drop.py"');
+  readfile('drop.py');
   exit;
 }
 
