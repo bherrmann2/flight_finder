@@ -7,7 +7,7 @@ DEBUG = True
 
 #TODO
 # - Filenames can't have spaces
-# - Support proxies ?
+# - IDEA: http://stackoverflow.com/questions/5925028/urllib2-post-progress-monitoring
 # -
 
 DROPURL = "http://127.0.0.1/mine/drop.php"
@@ -208,13 +208,18 @@ def drop_download(code,passwd,proxy=None):
         logit("requesting " + path + " at host " + host)
         conn.request("GET", path)
     r = conn.getresponse()
+    if r.status == 404:
+        error_exit("The following code does not exist: " + code)
     content = r.read()
     logit("Got response")
+    if r.status != 200:
+        error_exit("Got HTTP Error " + str(r.status) + " " + r.reason + "\nContent:" + content)
+
 
     #Check correct content type and no whitespace
     ct = r.getheader('Content-Type')
     if (ct != 'text/plain'):
-        error_exit("Content type is unexpected: " + ct)
+        error_exit("Content type is unexpected: " + str(ct))
 
     if (' ' in content):
         error_exit("Response Content cannot have whitespace: " + content)
@@ -223,8 +228,7 @@ def drop_download(code,passwd,proxy=None):
 
     #logit("GOT STRIPPED CONTENT:" + content)
 
-    if r.status != 200:
-        error_exit("Got HTTP Error " + str(r.status) + " " + r.reason + "\nContent:" + content)
+
 
     conn.close()
 
@@ -291,19 +295,20 @@ USAGE="""USAGE:
 
 Step 1: Upload the file (a code will be returned to you)
 
-  python drop.py <filename> <password> [<proxy_url>]
+  python drop.py <filename> <password>
 
-  e.g. (Note: proxy_url is optional)
-  python drop.py foo.rpm secret_word http:/dawebproxy00.americas.nokia.com:8080
+  python drop.py foo.rpm secret
 
 
 
 Step 2: Download the file on another machine
 
-  python drop.py <code> <password> [<proxy_url>]
+  python drop.py <code> <password>
 
-  e.g. (Note: proxy_url is optional, code was generated from step 1)
-  python drop.py 563372 secret_word http:/dawebproxy00.americas.nokia.com:8080
+  python drop.py 563372 secret
+
+Version 0.2
+Email questions, bugs, and jokes to werwath@gmail.com
 
 """
 if len(sys.argv) < 3:
@@ -313,10 +318,12 @@ if len(sys.argv) < 3:
 
 first_arg = sys.argv[1]
 passwd = sys.argv[2]
-proxy = None
+
 
 if len(sys.argv) > 3:
     proxy = sys.argv[3]
+else:
+    proxy = os.environ.get('HTTP_PROXY')
 
 
 if first_arg.isdigit():
