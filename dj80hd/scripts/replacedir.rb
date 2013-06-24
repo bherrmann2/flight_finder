@@ -5,6 +5,7 @@ require "fileutils"
 #
 # 22 jan 2009 jwerwath    Original based on mergedir_zeb.
 # 05 jan 2013 jwerwath    Add keep_existing param and comment
+# 24 jun 2013 jwerwath    Do not delete anything if we got errors
 # FIXME - Use a try catch for each copy.
 #
 #
@@ -143,7 +144,8 @@ end #find
 #FIXME - Have to remove empty directories.
 
 #Unless user has specified the nodelete switch, remove all files.
-if (!switches.include?("nodelete"))
+#Check for error log.  Do not delete anything if something went wrong
+if (!switches.include?("nodelete") and errorlog.empty?)
   Find.find(dir2) do |f|
     niceexit(errorlog) unless (!interrupted)
     if (File.exists?(f))

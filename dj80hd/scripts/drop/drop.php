@@ -4,6 +4,24 @@
 
 $DOCTYPE = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n";
 
+$RELDIR = "drops/";
+
+$FILE_KEY = "drop";
+function startsWith($haystack, $needle)
+{
+    return !strncmp($haystack, $needle, strlen($needle));
+}
+
+function endsWith($haystack, $needle)
+{
+    $length = strlen($needle);
+    if ($length == 0) {
+        return true;
+    }
+
+    return (substr($haystack, -$length) === $needle);
+}
+
 function getForm() {
   return <<<END_FORM
   <form enctype="multipart/form-data" method="POST">
@@ -16,8 +34,10 @@ END_FORM;
 
 function error_exit($code,$msg)
 {
-  http_response_code($code);
-  echo $msg
+  #http_response_code($code); #PHP 5.4 and above
+  header(':', true, $code);
+  echo $msg;
+  exit;
 }
 
 function exitapp($msg)
@@ -27,96 +47,121 @@ function exitapp($msg)
 	exit();
 }
 
-function get_html($img_url)
-{
-  global $_REQUEST;
-  $output = "<img src='" . $img_url . "'/><br/>\n";
-  return $output . "<hr>\n<textarea rows=20 cols=40>" . $output . "</textarea>";
+#e.g. 573822_foo.txt.drop becomes foo.txt
+function remove_code_and_suffix($file) {
+  $underscore = strpos($file,'_');
+  if ($underscore < 0) {
+    error_exit(503,'Invalid file name: ' . $file);
+  }
+  if (! endsWith($file,'.drop')) {
+    error_exit(503,'Invalid file name does not end with .drop:' . $file);
+  }	
+  $drop = strrpos($file,'.drop');
 
+  $realfilename = substr($file,$underscore + 1, $drop - $underscore - 1);
+  return $realfilename;
+  
+  
 }
+
 function send_file($file) {
-  $content = file_get_contents ($file);
+  global $RELDIR;
+  #$content = file_get_contents($file);
   #Its all BASE64
   header('Content-type: text/plain');
-  echo $content
+  $realfilename = remove_code_and_suffix($file);
+  header('Content-Disposition: attachment; filename="' . $realfilename . '"');
+  #content = r.read().strip()
+  
+  #echo $content;
+  readfile($RELDIR . $file);
 }
 
-function file_for_code($code)
+function code_to_file($code)
 {
-  $dir = "./" . $reldir;
-  $files = scandir($dir);
+  global $RELDIR;
+
+  $files = scandir("./" . $RELDIR);
   $needle = $code . "_";
   foreach ($files as $f) {
     if (startsWith($f,$needle)) {
       return $f;
     }
   }
-  return;
+  error_exit(404,"Could not find " . $code . " in " . implode(",",$files));
+}
+
+function no_action()
+{
+  header('Content-Type: text/plain');
+  header('Content-Disposition: attachment; filename="drop.py"');
+  readfile('drop.py');
+  exit;
 }
 
 // ---------------------------------------------- START -----------------
 error_reporting(E_ALL);
 
-out = $DOCTYPE;
-out .= "<html><head><title>Blogadder</title></head><body>\n";
-out .= getForm();
-out .= "<hr>\n";
+$out = "";
+$out .= "<html><head><title>Blogadder</title></head><body>\n";
+$out .= getForm();
+$out .= "<hr>\n";
 
-$rel_dir = "drops/"
-$base_url = "http://scissorsoft.com/pix/";
+
 
 //DEFAULT ACTION IS TO CONVERT
-if (isset($_REQUEST['action']) && $_REQUEST['action'] == "Add")
-{
-  if (!isset($_REQUEST['action']) {
-    error_exit(400,"No action");
+if (!isset($_REQUEST['action'])) {
+  no_action();
+  
+}
+if ($_REQUEST['action'] == "drop_upload") {
+  if (!isset($_REQUEST['secret']) || $_REQUEST['secret'] != "kerry4") {
+    error_exit(403,"YOU ARE NOT AUTHORIZED!"); 
+  }	
+  if (!isset($_FILES)) {
+    error_exit(503,"NO FILES from CGI");
   }
-  if ($_REQUEST['action'] == "drop_in") {
+  if (!isset($_FILES[$FILE_KEY])) {
+    error_exit(400,"No file in key $FILE_KEY");
+  } 
+  if (!isset($_FILES[$FILE_KEY]['name'])) {
+    error_exit(503,"No file name in key $FILE_KEY");
+  } 
+  if (!isset($_FILES[$FILE_KEY]['tmp_name'])) {
+    error_exit(503,"No file tmp_name in key $FILE_KEY");
+  } 
 
-    if (!isset($_REQUEST['secret']) || $_REQUEST['secret'] != "kerry4") {
-      error_exit(403,"YOU ARE NOT AUTHORIZED!");                                
-    }
-    else {
-      $urls['filename'] = NULL;
-      $file_keys = array('filename');
-      foreach ($file_keys as $key) {
-        $basename   = basename( $_FILES[$key]['name']); 
-	    #FIXME - still a chance of dups here ?
-		$code = rand(100000,999999);
-		#FIXME - Create path if it does not exist
-        $target_path = "./" . $reldir .  $code . "_" . $basename;
-        $tmp_name = $_FILES[$key]['tmp_name']; 
-		#FIXME - NEED MORE CHECKS ON FILE SIZE AND IF IT WAS A SUCCESS
-        if (isset($tmp_name)) {
-          if(move_uploaded_file($tmp_name, $target_path)) {
-            #echo "File ".  basename($tmp_name) .  " uploaded";
-            $urls[$key] = $base_url . $basename;
-          }
-          else {
-            error_exit(503,"UPLOAD ERROR! (tmp_name='" . $tmp_name . "' target_path='" . $target_path . "')";
-            print_r($_FILES);
-          }//end if(move_upload ..
-        }//end if(isset
-      }//end foreach
-      echo get_html($urls['img']);
-    }
+  $name = $_FILES[$FILE_KEY]['name'];
+  $tmp_name = $_FILES[$FILE_KEY]['tmp_name'];
+  $basename   = basename($name);
+  $code = rand(100000,999999);
+  #e.g. ./drops/837281_foo.txt.drop
+  $target_path = "./" . $RELDIR .  $code . "_" . $basename;
+  
+
+  
+  #FIXME - NEED MORE CHECKS ON FILE SIZE AND IF IT WAS A SUCCESS
+  if(move_uploaded_file($tmp_name, $target_path)) {
+    echo $code;
+  }else{
+    error_exit(503,"UPLOAD ERROR! (tmp_name='" . $tmp_name . "' target_path='" . $target_path . "')");
+    print_r($_FILES);
+  }//end if (isset($tmp_name)) 
+}//end if drop_in
+elseif ($_REQUEST['action'] == "drop_download") {
+  if (!isset($_REQUEST['code'])) {
+    error_exit(400,"No code specified"); 
   }
-  elseif ($_REQUEST['action'] == "drop_out") {
-    if (isset($_REQUEST['code'])) {
-	  $f = code_to_file($code);
-	  if (isset($f)) {
-	    send_file($f);
-	  }
-	  else {
-	    error_exit(404,"Could not find file for code $code");
-	  }
-	}
-	else {
-	  error_exit(400,"No code specified")
-	}
+  $code = $_REQUEST['code'];
+  $f = code_to_file($code);
+  if (!isset($f)) {
+    error_exit(404,"Could not find file for code $code");
   }
-  else {
-    error_exit(400,"BAD action: " . $_REQUEST['action'])
-  }
+  send_file($f);
+} 
+
+else {
+  error_exit(400,"BAD action: " . $_REQUEST['action']);
+
 }
 ?>

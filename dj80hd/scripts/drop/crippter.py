@@ -57,9 +57,9 @@ class Crippter:
         s=[self.c[(j-k)%len(self.c)] for j,k in zip(r2,k2)]
         return base64.b64decode("".join(s))
 
-    def decrypteStringToFile(self,r,filename):
+    def decryptStringToFile(self,r,filename):
         r2 = self.decryptString(r)
-        f = open(filename,'wb')
+        f = open(filename,'wb') #wb ok ?
         f.write(r2)
         f.close()
 
