@@ -35,6 +35,11 @@ def assert_env_equal(env_var,value):
     if not (val == value):
         raise SelfTestingScriptException("env var " + env_var + " is " + str(val) + " not " + value)
      
+def assert_user(username):
+    user = get_cmd_output(whoami)
+    user = user.strip()
+    if (username != user):
+        throw SelfTestingScriptException("User is " + str(user) + " not " + str(username))
 
 def assert_exits(file_or_dir):
   pass
