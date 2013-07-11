@@ -79,7 +79,7 @@ Find.find(dir1) do |f|
       if (File.size(absolute_pathname_for_dir1_file) == File.size(absolute_pathname_for_dir2_file))
         #--- FILES BOTH EXIST, SAME SIZE, FIRST FILE IS NEWER
         #----------------------------------------------------
-	if ((mtime_for_dir1_file > mtime_for_dir2_file) && (!File.compare(absolute_pathname_for_dir1_file, absolute_pathname_for_dir2_file)))
+		if ((mtime_for_dir1_file > mtime_for_dir2_file) && (!File.compare(absolute_pathname_for_dir1_file, absolute_pathname_for_dir2_file)))
           File.copy(absolute_pathname_for_dir1_file,absolute_pathname_for_dir2_file)
           #--- * CASE 1: FILE EXISTS IN BOTH PLACES, DIR 1 is NEWER
           #--------------------------------------------------------
@@ -98,7 +98,7 @@ Find.find(dir1) do |f|
 
         #--- FILES BOTH EXIST BUT ARE OF DIFFERENT SIZE DIR 2 is OLDER!
         #--------------------------------------------------------------
-	if (mtime_for_dir1_file > mtime_for_dir2_file)
+		if (mtime_for_dir1_file > mtime_for_dir2_file)
           #--- * CASE 3 * BOTH FILES EXIST AND DIR2 (TARGET) FILE OLDER - 
           #--- OVERWRITE DIR2 ---
           #puts "[EXISTS and is newer]" + absolute_pathname_for_dir1_file
@@ -108,8 +108,13 @@ Find.find(dir1) do |f|
         elsif (mtime_for_dir2_file > mtime_for_dir1_file) #otherwise dir2 file is newer...
           #--- * CASE 4 * BOTH FILES EXIST AND DIR2 (TARGET) FILE NEWER - 
           #--- LEAVE DIR2 ---
-          puts "[EXISTS (#{bs} & newer)]" + absolute_pathname_for_dir2_file + " (" +file_count.to_s + ")"
-        else
+			if (File.size(absolute_pathname_for_dir2_file) == 0)
+				File.copy(absolute_pathname_for_dir1_file,absolute_pathname_for_dir2_file)
+				puts "[OVERWRITTEN 0 size]" + absolute_pathname_for_dir2_file + " (" + file_count.to_s + ")"
+			else
+				puts "[EXISTS (#{bs} & newer)]" + absolute_pathname_for_dir2_file + " (" +file_count.to_s + ")"
+			end
+		else
           #--- This should NEVER HAPPEN
           puts "[UNEXPECTED (different size but same age ?)]" + absolute_pathname_for_dir2_file + " (" + file_count.to_s + ")"
         end 
