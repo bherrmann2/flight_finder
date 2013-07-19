@@ -9,7 +9,7 @@
 # 12-MAR-2011 Update to support box.net, use only one ua, one cookie jar
 #
 
-use strict;
+#use strict;
 use URI;
 use URI::Escape;
 use LWP::UserAgent;
@@ -31,7 +31,7 @@ my $SLEEP_TIME = 1;
 #
 # Get all our command line input into nice vars
 my %o = ();
-getopts("a:b:o:x:i:d:u:l:",\%o);
+getopts("a:b:o:x:i:d:u:l:s:",\%o);
 my $action = "none";
 $action = $o{"a"};
 my $blog = $o{"b"};
@@ -39,6 +39,11 @@ my $output_filename = $o{"o"};
 my $url             = $o{"u"};
 my $input_filename = $o{"i"};
 my $ignore_filename = $o{"x"};
+$MINLEN  = $o{"s"};
+if (!$MINLEN ) {
+  $MINLEN = 700000;
+}
+print "MINLEN IS $MINLEN\n";
 my $dir = $o{"d"};
 my $url_list_file = $o{"l"};
 $action = "none" unless $action;
@@ -423,6 +428,9 @@ sub get_links_from_url {
     elsif ($abs =~ /^http:\/\/(\S+)\.mp3$/) {
 	  	push @sample_urls, $abs;
     }
+	elsif ($abs =~ /^http:\/\/(\S+)\.wav$/i) {
+	  	push @sample_urls, $abs;
+    }
 
   }
   return make_unique(@sample_urls);
@@ -465,7 +473,6 @@ sub save_file {
   if (!$resp || !$resp->can('content_type')) {
     return "ERROR 2004: No RESPONSE";
   }
-  my $MINLEN = 700000;
   my $ct = $resp->content_type();
 
   #First find the filename
