@@ -2,6 +2,7 @@
 
 import wave # 1
 import struct
+import random
 
 ifile = wave.open("input.wav")
 ofile = wave.open("output.wav", "w")
@@ -21,20 +22,19 @@ dc = dcs[sampwidth]
 frame_count = ifile.getnframes()
 print "Got " + str(frame_count) + " frames"
 
+
 for i in range(frame_count):
     iframe = ifile.readframes(1)
-    print "iframe is " + str(len(iframe)) + " bytes"
+    #print "iframe is " + str(len(iframe)) + " bytes"
 
-    iframes = struct.unpack(fmt, iframe)
-    print "iframes is now " + str(iframes)
-    iframe = iframes[0]
-    print "iframe is now " + str(iframe)
-    iframe -= dc
+    (left,right) = struct.unpack(fmt, iframe)
 
-    oframe = iframe / 2;
+    #print "left is " + str(left)
+    #print "right is " + str(right)
 
-    oframe += dc
-    oframe = struct.pack(fmt, oframe)
+    
+    
+    oframe = struct.pack(fmt, left,right)
     ofile.writeframes(oframe)
 
 ifile.close()
