@@ -23,17 +23,11 @@ frame_count = ifile.getnframes()
 print "Got " + str(frame_count) + " frames"
 
 
+#Loop to mute the left stereo channel
 for i in range(frame_count):
     iframe = ifile.readframes(1)
-    #print "iframe is " + str(len(iframe)) + " bytes"
-
     (left,right) = struct.unpack(fmt, iframe)
-
-    #print "left is " + str(left)
-    #print "right is " + str(right)
-
-    
-    
+    left = 0  
     oframe = struct.pack(fmt, left,right)
     ofile.writeframes(oframe)
 
