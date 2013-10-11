@@ -1,0 +1,79 @@
+# Output from command   /usr/local/squid/bin/squidclient mgr:info
+
+HTTP/1.0 200 OK
+Server: squid/2.6.STABLE9-20070214
+Date: Mon, 14 Apr 2008 20:00:56 GMT
+Content-Type: text/plain
+Expires: Mon, 14 Apr 2008 20:00:56 GMT
+Last-Modified: Mon, 14 Apr 2008 20:00:56 GMT
+X-Cache: MISS from frankenstein1
+Via: 1.0 frankenstein1:3128 (squid/2.6.STABLE9-20070214)
+Proxy-Connection: close
+
+Squid Object Cache: Version 2.6.STABLE9-20070214
+Start Time:     Tue, 05 Jun 2007 22:04:17 GMT
+Current Time:   Mon, 14 Apr 2008 20:00:56 GMT
+Connection information for squid:
+        Number of clients accessing cache:      28
+        Number of HTTP requests received:       1258676944
+        Number of ICP messages received:        0
+        Number of ICP messages sent:    0
+        Number of queued ICP replies:   0
+        Request failure ratio:   0.00
+        Average HTTP requests per minute since start:   2784.5
+        Average ICP messages per minute since start:    0.0
+        Select loop called: -1466947376 times, -18.489 ms avg
+Cache information for squid:
+        Request Hit Ratios:     5min: 44.8%, 60min: 45.7%
+        Byte Hit Ratios:        5min: 37.6%, 60min: 40.0%
+        Request Memory Hit Ratios:      5min: 8.8%, 60min: 8.3%
+        Request Disk Hit Ratios:        5min: 70.5%, 60min: 70.7%
+        Storage Swap size:      414720976 KB
+        Storage Mem size:       8260 KB
+        Mean Object Size:       13.97 KB
+        Requests given to unlinkd:      211904459
+Median Service Times (seconds)  5 min    60 min:
+        HTTP Requests (All):   0.06286  0.05951
+        Cache Misses:          0.18699  0.18699
+        Cache Hits:            0.01309  0.01235
+        Near Hits:             0.16775  0.16775
+        Not-Modified Replies:  0.00091  0.00091
+        DNS Lookups:           0.00190  0.00190
+        ICP Queries:           0.00000  0.00000
+Resource usage for squid:
+        UP Time:        27122199.162 seconds
+        CPU Time:       813088.864 seconds
+        CPU Usage:      3.00%
+        CPU Usage, 5 minute avg:        6.22%
+        CPU Usage, 60 minute avg:       5.92%
+        Process Data Segment Size via sbrk(): -1335092 KB
+        Maximum Resident Size: 0 KB
+        Page faults with physical i/o: 1
+Memory usage for squid via mallinfo():
+        Total space in arena:  -1305396 KB
+        Ordinary blocks:       -1307547 KB    255 blks
+        Small blocks:               0 KB      0 blks
+        Holding blocks:         17716 KB      7 blks
+        Free Small blocks:          0 KB
+        Free Ordinary blocks:    2150 KB
+        Total in use:          -1289831 KB 100%
+        Total free:              2150 KB 0%
+        Total size:            -1287680 KB
+Memory accounted for:
+        Total accounted:       2217303 KB
+        memPoolAlloc calls: 1755987865
+        memPoolFree calls: 1666910205
+File descriptor usage for squid:
+        Maximum number of file descriptors:   8192
+        Largest file desc currently in use:    565
+        Number of file desc currently in use:  529
+        Files queued for open:                   0
+        Available number of file descriptors: 7663
+        Reserved number of file descriptors:   100
+        Store Disk files open:                   5
+        IO loop method:                     epoll
+Internal Data Structures:
+        29676755 StoreEntries
+          1711 StoreEntries with MemObjects
+          1643 Hot Object Cache Items
+        29676597 on-disk objects

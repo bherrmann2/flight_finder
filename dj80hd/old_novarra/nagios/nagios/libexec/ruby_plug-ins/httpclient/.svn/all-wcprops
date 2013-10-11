@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/scripts/!svn/ver/183/nagios/httpclient
+END
+http.rb
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/scripts/!svn/ver/177/nagios/httpclient/http.rb
+END
+cacert.p7s
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/scripts/!svn/ver/177/nagios/httpclient/cacert.p7s
+END
+cookie.rb
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/scripts/!svn/ver/183/nagios/httpclient/cookie.rb
+END

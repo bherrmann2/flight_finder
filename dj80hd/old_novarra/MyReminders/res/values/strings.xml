@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyReminders</string>
+    <string name="quote">Tap Anywhere!</string>
+    <string name="another_button_label">Go</string>
+    <string name="new_button_label">New</string>
+    <string name="email_button_label">Email</string>
+</resources>

@@ -1,0 +1,7 @@
+1.	espn.go.com/broadband
+2.	videos.orange.es
+3.	vids.myspace.com
+4.	es.youtube.com
+5.	clipfish.de
+6.	myvideo.de (currently broken)
+
