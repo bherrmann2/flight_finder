@@ -1,0 +1,33 @@
+<h2>How do I install this as a Nagios Plugin</h2>
+This is for the 3HK video check.
+<ol>
+        <li>Copy all these files to the libexec directy of Nagios.
+        <li>Configure Nagios Command to be 'ruby nov_check_video_sites.rb 3hk_video_sites.conf'  (FIXME - Do we need to specify absolute paths ?)
+        
+</ol>
+<h2>File Descriptions</h2>
+<table border>
+<tr><th>Filename<th>Description
+<tr><td>httpclient.rb and httpclient directory<td>Base class for the AcaClient implements HTTP protocol.
+                        <tr><td>aca_client.rb<td>Contains classes for AcaClient, AcaClientFactory, etc. : everything needed to create a specialized HTTP client that knows how to talk to ACAs.
+
+<tr><td>aca_client_factory.conf<td>Contains configuration for several 'prototype' (i.e. preconfigured) ACA clients like 3hk.proxy.novarra.com, vfuk.p2.novarra.co.uk, etc.
+
+<tr><td>nagios_plugin.rb<td>base class NagiosPlugin for all nagios plugins
+<tr><td>nov_check_video_sites.rb<td>Nagios plugin to check video sites (make sure that rtsp link is available for videos)
+
+
+                        <tr><td>nov_test_ruby_for_nagios.rb<td>A test nagios plugin to make sure that ruby is configured properly on the platform hosting nagios.  It returns a WARNING 100% of the time.
+                                                <tr><td>test.rb<td>Unit Test Suite for this software.  To Execute it simply run 'ruby test.rb'
+                                                                        <tr><td>3hk_video_sites.conf<td>Configuration file for nov_check_video_sites.rb plugin that tests only 3HK.
+                      <tr><td>testregex.rb<td>A tool for testing regular expressions that are configured in the configuration files like 3hk_video_sites.conf
+                      <tr><td>video_check.rb<td>The workhorse class VideoCheck behind the nov_check_video_sites.rb nagios plugin
+
+<tr><td>
+<tr><td>
+<tr><td>
+</table>
+<h2>Usage</h2>
+The following are examples of how to use this library:
+
+

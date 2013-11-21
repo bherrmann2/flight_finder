@@ -1,0 +1,32 @@
+---YES--- blip.tv	http://blip.tv/ (DONE!) BUT NOT on vision7
+---YES--- vision9_youtube.com.conf (DONE on vision7)
+---YES--- break.com	(OK ON VISION9)
+---YES--- es.youtube.com (OK ON VISION7, VISION9)
+---YES--- hk.youtube.com (OK ON VISION7, VISION9)
+---YES--- yahoo HK	http://hk.video.yahoo.com/ (WORKS ON VISION7, VISION9)
+---YES--- heavy.com	(WORKS on VISION9)
+---YES--- youare.tv	http://youare.tv/ (WORKS ON VISION9)
+---YES--- jumpcut	(WORKS ON VISION9)
+---YES--- video.libero.it	(WORKS ON VISION9)
+---YES--- vids.myspace.com (WORKS ON VISION9)
+---YES--- myvideo.de (WORKS ON VISION9)
+---YES--- youporn.com	(DOES NOT WORK ALL THE TIME THOUGH)                   
+---YES--- spike.com (WORKS ON VISION9)
+---YES-- google	http://video.google.com/ 
+---YES--- yahoo http://video.yahoo.com/ 
+
+==================== HTTP 404 on RTSP Links on VISION 9===================
+---NO --- xanga.com	http://video.xanga.com/  (WORKS on VISION9, NOT VISION7)
+---NO --- dailymotion (404 on VISION9, DOES NOT WORK ON VISION7)
+---NO --- metatube	(404 on VISION9)            
+---NO --- livevideo.com (404 from VISION9)
+---NO --- blastro.com (404 ON VISION9, DOES NOT WORK ON VISION7)
+---NO --- videos.orange.es (404s ON VISION9)
+---NO --- espn (404 on VISION9 fails on vision7)
+
+================== NO ACCESS FROM US ======================================
+---NO --- clipfish.de (NO ACCESS FROM US!!!)
+
+==================DO NOT WORK DUE TO NO RTSP LINKS ========================
+---NO--- elmundo.es (NO RTSP LINKS)
+---NO--- veoh.com (NO RTSP LINKS)

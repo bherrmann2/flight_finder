@@ -1,0 +1,329 @@
+#!/usr/bin/perl -w
+
+use strict;
+#use diagnostics;
+
+use Getopt::Std;
+use POSIX qw(strtod);
+
+use vars qw ($USAGE $VERSION $BASENAME);
+use vars qw ($opt_V $opt_h $opt_H $opt_w $opt_c $opt_o $opt_T );
+use vars qw ($warn_thresh $crit_thresh);
+use vars qw (@warn_thresholds @crit_thresholds);
+ 
+$VERSION="0.1 28-Apr-2008";
+$BASENAME=basename2($0);
+
+$USAGE = <<EOUSAGE;
+Usage: $0 -H host -w X -c Y -oN -T type
+
+  where
+    -H host gives host to check for rtvs stuff
+    -w X gives a threshold of X for a nagios WARNING (yellow)
+    -c Y gives a threshold of Y for a nagios CRITICAL (red)
+    -o N gives the host resource to check and is defined as:
+            1: response codes
+            2: Darwin process CPU
+    -T TYPE if -o1, then TYPE is the type of response code to check:
+        desc: describe codes
+        play: play codes
+
+  response codes example:
+      $0 -H 172.16.0.85 -w 95 -c 90 -o1 -T play
+  Darwin CPU example:
+      $0 -H 172.16.0.88 -w 75 -c 90 -o2
+
+  returns:
+      nagios-formatted string.
+
+EOUSAGE
+
+
+sub basename2 {
+    my $fullname = shift;
+    return ( $fullname =~ m{^.*\/([^/]+)}xms ? $1 : $fullname );
+}
+
+sub getnum {
+    use POSIX qw(strtod);
+    my $str = shift;
+    $str =~ s/^\s+//;
+    $str =~ s/\s+$//;
+    $! = 0;
+    my($num, $unparsed) = strtod($str);
+    if (($str eq '') || ($unparsed != 0) || $!) {
+        return;
+    } else {
+        return $num;
+    }
+}
+
+
+
+###########################################################
+# helpers for returning plugin results to nagios
+###########################################################
+sub nagios_unknown {
+    my ($subfun, $errmsg) = @_;
+    print STDOUT "$subfun UNKNOWN: ", $errmsg, "\n";
+    exit 3;
+}
+ 
+sub nagios_critical {
+    my ($subfun, $errmsg, $perfdata) = @_;
+    if (defined($perfdata) && ( "" ne $perfdata)) {
+        print STDOUT "$subfun CRITICAL: ", $errmsg, "| ", $perfdata, "\n";
+    } else {
+        print STDOUT "$subfun CRITICAL: ", $errmsg, "\n";
+    }
+    exit 2;
+}
+ 
+sub nagios_warning {
+    my ($subfun, $errmsg, $perfdata) = @_;
+    if (defined($perfdata) && ( "" ne $perfdata)) {
+        print STDOUT "$subfun WARNING: ", $errmsg, "| ", $perfdata, "\n";
+    } else {
+        print STDOUT "$subfun WARNING: ", $errmsg, "\n";
+    }
+    exit 1;
+}
+ 
+sub nagios_ok {
+    my ($subfun, $ok_msg, $perfdata) = @_;
+    if (defined($perfdata) && ("" ne $perfdata)) {
+        print STDOUT "$subfun OK: ", $ok_msg, "| ", $perfdata, "\n";
+    } else {
+        print STDOUT "$subfun OK: ", $ok_msg, "\n";
+    }
+    exit 0;
+}
+ 
+sub nagios_unknown_terse {
+  my $msg = shift;
+  $msg = "Unknown Error" unless defined($msg);
+  print STDOUT "UNKNOWN - ", $msg, "\n";
+  exit 3;
+}
+ 
+sub nagios_critical_terse {
+  my ($msg, $perfdata) = @_;
+  nagios_unknown_terse("Internal Error") unless defined($msg);
+  $perfdata = "" unless defined($perfdata);
+  print STDOUT "CRITICAL - ", $msg, "|", $perfdata, "\n";
+  exit 2;
+}
+ 
+sub nagios_warning_terse {
+  my ($msg, $perfdata) = @_;
+  nagios_unknown_terse("Internal Error") unless defined($msg);
+  $perfdata = "" unless defined($perfdata);
+  print STDOUT "WARNING - ", $msg, "|", $perfdata, "\n";
+  exit 1;
+}
+ 
+sub nagios_ok_terse {
+  my ($msg, $perfdata) = @_;
+  nagios_unknown_terse("Internal Error") unless defined($msg);
+  $perfdata = "" unless defined($perfdata);
+  print STDOUT "OK - ", $msg, "|", $perfdata, "\n";
+  exit 0;
+}
+
+
+###########################################################
+# execute remote cmd via ssh
+###########################################################
+sub check_via_nagios_ssh {
+    my ($remote_cmd, $hostname) = @_;
+    $hostname = "nagios\@$hostname";
+    #### my $ssh_cmd = qq{ ssh -n -x -T -i /home/nagios/.ssh/id_rsa $hostname "${remote_cmd}" };
+    my $ssh_cmd = qq{ ssh -n -x -T $hostname "${remote_cmd}" };
+    my $str=`${ssh_cmd}`;
+    if ($?) {
+        nagios_unknown_terse("bad exit from ssh to [$hostname]: [$?]");
+    }
+    return $str;
+}
+
+
+###########################################################
+# This just parses multiple warn or crit thresholds, separated by ","
+# TODO: parse the full set of threshold options:
+#   http://nagiosplug.sourceforge.net/developer-guidelines.html#THRESHOLDFORMAT
+sub parse_threshold {
+    my $input_str = shift;
+    my $aref = shift;
+    if ( ! $input_str =~ /,/ ) {
+        $aref->[0] = $input_str;
+        return;
+    }
+    my @inputs = split(/,/, $input_str);
+    for (my $i=0; $i<=$#inputs; $i++) {
+        my $num;
+        eval { $num = getnum($inputs[$i]); };
+        if ($@) { die "Non-numeric threshold [$inputs[$i]] : $@" ; }
+        $aref->[$i] = $num;
+    }
+    return;
+}
+ 
+sub validate_thresholds {
+  my $warn_vs_crit = shift;
+  ## swhitney - FIXME - how to do this cleanly in perl?
+  if ( ! defined($warn_vs_crit) ) {
+    die "Undefined comparison operator";
+  }
+  if ( (">=" ne $warn_vs_crit) && ("<=" ne $warn_vs_crit) ) {
+    die "Unknown comparison operator: [$warn_vs_crit]";
+  }
+  for (my $key=0; $key <= $#warn_thresholds; $key++) {
+    if (!defined($crit_thresholds[$key])) {
+      die "State mismatch: warn_thresholds[$key] exists, but crit_thresholds[$key] doesn't.";
+    }
+    if ( (">=" eq $warn_vs_crit) && ($warn_thresholds[$key] >= $crit_thresholds[$key]) ) {
+      die "Invalid args: warn_thresholds[$key]=[$warn_thresholds[$key]] >= crit_thresholds[$key]=[$crit_thresholds[$key]]";
+    }
+    if ( ("<=" eq $warn_vs_crit) && ($warn_thresholds[$key] <= $crit_thresholds[$key]) ) {
+      die "Invalid args: warn_thresholds[$key]=[$warn_thresholds[$key]] <= crit_thresholds[$key]=[$crit_thresholds[$key]]";
+    }
+  }
+  for (my $key=0; $key <= $#crit_thresholds; $key++) {
+    if (!defined($warn_thresholds[$key])) {
+      die "State mismatch: crit_thresholds[$key] exists, but warn_thresholds[$key] doesn't.";
+    }
+  }
+  if (defined($warn_thresholds[0]) &&defined($crit_thresholds[0])) {
+    $warn_thresh = $warn_thresholds[0];
+    $crit_thresh = $crit_thresholds[0];
+  }
+  return;
+}
+
+
+sub check_rsp_codes($$) {
+    my $host = shift;
+    my $type = shift;
+
+    if( "desc" ne $type && "play" ne $type ) {
+    	die "Unknown type. Choices are 'desc' and 'play'.\n";
+    }
+     
+    use vars qw ( $line $warning $critical $desc_total $play_total $pct_200s);
+    use vars qw ( @stats %desc %play );
+     
+    $line = check_via_nagios_ssh("ls -1tr /var/nagios/logs/rtvs/*rtvs* | tail -1 | xargs tail -1", $host);
+    #$line = check_via_nagios_ssh("ls -1tr /var/streaming/logs/* | tail -1 | xargs tail -1", $host);
+    @stats = split(',', $line);
+
+    $warning = pop @warn_thresholds;
+    $critical = pop @crit_thresholds;
+
+    if ("desc" eq $type) {
+    	$desc{"200"} = $stats[1];
+    	$desc{"404"} = $stats[2];
+    	$desc{"other"} = $stats[3];
+
+	$desc_total = $stats[1] + $stats[2] + $stats[3];
+	if(0 == $desc_total) {
+		nagios_unknown("describe_codes", "No response codes available");
+	}
+	
+	$pct_200s = $stats[1]*100/$desc_total;
+	if($pct_200s <= $critical) {
+		nagios_critical("describe_codes", "Describe 200s on $host are at $pct_200s%", "200=".$desc{"200"}." 404=".$desc{"404"}." other=".$desc{"other"});
+	}
+	elsif($pct_200s <= $warning) {
+		nagios_warning("describe_codes", "Describe 200s on $host are at $pct_200s%", "200=".$desc{"200"}." 404=".$desc{"404"}." other=".$desc{"other"});
+	}
+	else {
+		nagios_ok("describe_codes", "Describe 200s on $host are at $pct_200s%", "200=".$desc{"200"}." 404=".$desc{"404"}." other=".$desc{"other"});
+	}
+    }
+
+    elsif ("play" eq $type) {
+    	$play{"200"} = $stats[4];
+    	$play{"404"} = $stats[5];
+    	$play{"other"} = $stats[6];
+    	$play{"other"} =~ s/\s+//g;
+
+	$play_total = $stats[4] + $stats[5] + $stats[6];
+	if(0 == $play_total) {
+		nagios_unknown("play_codes", "No response codes available");
+	}
+	
+	$pct_200s = $stats[1]*100/$play_total;
+	if($pct_200s <= $critical) {
+		nagios_critical("play_codes", "Play 200s on $host are at $pct_200s%", "200=".$play{"200"}." 404=".$play{"404"}." other=".$play{"other"});
+	}
+	elsif($pct_200s <= $warning) {
+		nagios_warning("play_codes", "Play 200s on $host are at $pct_200s%", "200=".$play{"200"}." 404=".$play{"404"}." other=".$play{"other"});
+	}
+	else {
+		nagios_ok("play_codes", "Play 200s on $host are at $pct_200s%", "200=".$play{"200"}." 404=".$play{"404"}." other=".$play{"other"});
+	}
+    }
+}
+
+
+sub check_darwin_cpu($) {
+    my $host = shift;
+    
+    use vars qw ( @pids );
+    use vars qw ( $warning $critical $cpu $warn_flag $crit_flag $result $perf_data );
+
+    $warning = pop @warn_thresholds;
+    $critical = pop @crit_thresholds;
+
+    $line = check_via_nagios_ssh("ps -ef | grep Darwin | grep root | awk '{print \\\$2}'", $host);
+    @pids = split('\n', $line);
+
+    ### the above command also returns the PID of the command itself, so get rid of it ###
+    pop @pids;
+
+    $crit_flag = 0;
+    $warn_flag = 0;
+    $result = "Darwin CPUs are: "; ### have to do result like this because of unknown number of PIDs ###
+    foreach (@pids) {
+	$cpu = check_via_nagios_ssh("top -b -n 1 -p $_ | grep Darwin | awk '{print \\\$9}'", $host);
+	$cpu =~ s/\s+//g;
+	if ($cpu >= $critical) {
+		$crit_flag = 1;
+	}
+	elsif ($cpu >= $warning) {
+		$warn_flag = 1;
+	}
+    	$perf_data .= "$_=$cpu ";
+    	$result .= "\t$_: $cpu%";
+    }
+
+    if (1 == $crit_flag) {
+    	nagios_critical("darwin_cpu", "$result", $perf_data); 
+    }
+    elsif (1 == $warn_flag) {
+    	nagios_warning("darwin_cpu", "$result", $perf_data);
+    }
+    else {
+        nagios_ok("darwin_cpu", "$result", $perf_data);
+    }
+}
+
+
+###########################################################
+# parse cmd line
+###########################################################
+getopts('VhH:w:c:o:T:');
+if ($opt_V) { print "${BASENAME} ${VERSION}\n"; exit 0; }
+if ($opt_h) { print "${USAGE}\n";      exit 0; }
+
+nagios_unknown "$0",         "Missing host param\n$USAGE" unless $opt_H;
+nagios_unknown "$0",  "Missing warning threshold\n$USAGE" unless $opt_w;
+parse_threshold($opt_w, \@warn_thresholds);
+nagios_unknown "$0", "Missing critical threshold\n$USAGE" unless $opt_c;
+parse_threshold($opt_c, \@crit_thresholds);
+nagios_unknown "$0",          "Missing -o option\n$USAGE" unless $opt_o;
+
+("1" eq $opt_o) && check_rsp_codes( $opt_H, $opt_T );
+("2" eq $opt_o) && check_darwin_cpu( $opt_H );
+
+nagios_critical "Unknown -o option [$opt_o]\n$USAGE" ;
