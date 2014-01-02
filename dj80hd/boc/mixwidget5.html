@@ -1,0 +1,530 @@
+<html>
+<head>
+<!-- <script src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.2/prototype.js"></script> 
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
+-->
+
+<script>
+
+/*
+* TODO:
+* - Make work in firefox
+* - tape in the window
+* - songlist
+* - remote download and parsing
+* - controlls
+* - INFO section
+* - skin, images, scale and position options
+* - Text on cassette. 
+* - 
+* Todo - Online tool to export the json config
+*
+* mixtape = new html5MixWidget
+*
+* config.xml
+* playlist.xml
+* 
+
+NOTES:
+var result = httpRequest.responseText;
+jsonResponse = eval('(' + result + ')');
+
+
+
+*/
+
+function xml2Dom(text) {
+  var xmlDoc;
+  if (window.DOMParser) {
+    parser=new DOMParser();
+    xmlDoc=parser.parseFromString(text,"text/xml");
+  }
+  else { // Internet Explorer
+    xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+    xmlDoc.async="false";
+    xmlDoc.loadXML(text); 
+  }
+  return xmlDoc;
+}//xmlToDom
+
+// Changes XML DOM to JSON
+function xmlToJson(xml) {
+
+  
+  // Create the return object
+  var obj = {};
+
+  if (xml.nodeType == 1) { // element
+    // do attributes
+    if (xml.attributes.length > 0) {
+    obj["@attributes"] = {};
+      for (var j = 0; j < xml.attributes.length; j++) {
+        var attribute = xml.attributes.item(j);
+        obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
+      }
+    }
+  } else if (xml.nodeType == 3) { // text
+    obj = xml.nodeValue;
+  }
+
+  // do children
+  if (xml.hasChildNodes()) {
+    for(var i = 0; i < xml.childNodes.length; i++) {
+      var item = xml.childNodes.item(i);
+      var nodeName = item.nodeName;
+      if (typeof(obj[nodeName]) == "undefined") {
+        obj[nodeName] = xmlToJson(item);
+      } else {
+        if (typeof(obj[nodeName].length) == "undefined") {
+          var old = obj[nodeName];
+          obj[nodeName] = [];
+          obj[nodeName].push(old);
+        }
+        obj[nodeName].push(xmlToJson(item));
+      }
+    }
+  }
+  return obj;
+}
+
+function tick(e) {
+ //FIXME 
+ document.getElementById('progress').innerText = "Time: " + video.currentTime;
+}
+function playCassette() {
+  isplaying = true;
+}
+
+function pauseCassette() {
+  isplaying = false;
+}
+
+
+
+function roundRect (ctxx,sx,sy,ex,ey,r) {
+    var r2d = Math.PI/180;
+    if( ( ex - sx ) - ( 2 * r ) < 0 ) { r = ( ( ex - sx ) / 2 ); } //ensure that the radius isn't too large for x
+    if( ( ey - sy ) - ( 2 * r ) < 0 ) { r = ( ( ey - sy ) / 2 ); } //ensure that the radius isn't too large for y
+    ctxx.beginPath();
+    ctxx.moveTo(sx+r,sy);
+    ctxx.lineTo(ex-r,sy);
+    ctxx.arc(ex-r,sy+r,r,r2d*270,r2d*360,false);
+    ctxx.lineTo(ex,ey-r);
+    ctxx.arc(ex-r,ey-r,r,r2d*0,r2d*90,false);
+    ctxx.lineTo(sx+r,ey);
+    ctxx.arc(sx+r,ey-r,r,r2d*90,r2d*180,false);
+    ctxx.lineTo(sx,sy+r);
+    ctxx.arc(sx+r,sy+r,r,r2d*180,r2d*270,false);
+    ctxx.closePath();
+}
+
+function convertToRadians(degree) {
+     return degree*(Math.PI/180);
+}
+
+function incrementAngle() {
+  angle = angle - angle_increase_per_interval;
+  if(angle < 0) {
+    angle = 359;
+  }
+}//incrementAngle
+
+function normalizeAngle(a) {
+  return (a>= 360) ? a - 360 : a;
+}
+
+
+
+
+function drawVinyl() {  
+  ctx.clearRect(0,0,500,500) ;
+  incrementAngle();
+  ctx.save();                
+  ctx.lineWidth = 10;  
+  ctx.translate(recordRadius/2,recordRadius/2);
+  ctx.rotate(convertToRadians(angle));
+            
+            // Create a circular clipping path        
+  ctx.beginPath();
+  ctx.arc(0,0,recordRadius/2,0,Math.PI*2,true);
+  ctx.clip();
+//------- 
+//context . drawImage(image, dx, dy)
+//context . drawImage(image, dx, dy, dw, dh)
+//context . drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh)
+//------- 
+
+  ctx.drawImage(recImg, -halfRecordRadius, -halfRecordRadius, recordRadius, recordRadius);
+	//draw the record label
+  ctx.restore();
+  ctx.beginPath();
+  var x = halfRecordRadius;
+  ctx.arc(x,x, labelRadius, Math.PI*2, 0, true);
+  ctx.fillStyle="#000000";                   
+  ctx.fill();
+  ctx.closePath();
+  ctx.restore();
+
+            //draw the hole	
+  ctx.beginPath();
+  ctx.fillStyle="#ffffff"; // text color
+  ctx.arc(x,x, holeRadius, Math.PI*2, 0, true);
+  ctx.fill();
+  ctx.closePath();
+  ctx.restore();
+}
+function getPlayer() {
+  return document.getElementById('player');
+}
+function isPlaying() {
+  return isplaying;
+}
+
+/*
+* Globals used:
+* config
+*/
+function nextTrack() {
+  var max_tracklist_index = config.playlist.tracklist.length - 1;
+  var audio = getPlayer();
+  config.play_index = config.play_index + 1;
+  if (config.play_index > max_tracklist_index) {
+    config.play_index = max_tracklist_index;
+  }
+  audio.pause();
+  //alert("playindex = " + config.play_index);
+  var url = config.playlist.tracklist[config.play_index].location;
+  audio.setAttribute('src',unescape(url));
+  audio.play();
+  log(config.play_index + ":" + audio.src);
+  
+}
+function previousTrack() {
+  config.play_index = config.play_index - 2;
+  if (config.play_index < -1) {
+    config.play_index = -1;
+  }
+  nextTrack(); 
+}
+
+/**
+* Globals used:
+* cassette_rounding_radius
+* cassette_width
+* cassette_height
+* gear_radius
+* gear1_center_x
+* gear2_center_x
+* gear1_center_y
+* gear2_center_y
+*/
+function drawCassette() {
+  if (isplaying) incrementAngle();
+  c.save();
+  roundRect(c,0,0,cassette_width,cassette_height,cassette_rounding_radius);
+  c.clip();
+
+  //Draw cassette image
+  c.beginPath();
+  c.drawImage(skin,0,0,cassette_width,cassette_height);
+  c.closePath();
+
+  // set composite property
+  
+  // draw hole for gear 1 
+  c.globalCompositeOperation = 'destination-out'; //compositeTypes[i];
+  c.beginPath();
+  //var x = cassette_width / width_2_gear_center_x_ratio;
+  //var y = cassette_width / width_2_gear_center_y_ratio;
+  c.arc(gear1_center_x,gear1_center_y,gear_radius,0,Math.PI*2,true);
+  c.closePath();
+  c.fill();
+
+  //Hole for Gear 2
+  c.beginPath();
+  c.arc(gear2_center_x,gear2_center_y,gear_radius,0,Math.PI*2,true);
+  c.closePath();
+  c.fill();
+
+  //Small Circular Hole 1
+  c.beginPath();
+  c.arc(small_circular_hole_x1,small_circular_hole_y1,small_circular_hole_radius,0,Math.PI*2,true);
+  c.closePath();
+  c.fill();
+
+  //Small Circular Hole 2
+  c.beginPath();
+  c.arc(cassette_width - small_circular_hole_x1,small_circular_hole_y1,small_circular_hole_radius,0,Math.PI*2,true);
+  c.closePath();
+  c.fill();
+  
+ 
+  //Small Square Hole 1 & 2
+  c.beginPath(); 
+  c.fillRect(small_square_hole_x1,small_square_hole_y1,small_square_hole_side,small_square_hole_side);
+  c.fillRect(cassette_width - small_square_hole_x1 - small_square_hole_side,small_square_hole_y1,small_square_hole_side,small_square_hole_side);
+
+  //Draw window
+  c.beginPath(); 
+  var top_left_x = (cassette_width - window_width ) / 2; 
+  var top_left_y = (14/16) * pixels_per_inch;
+    
+  c.fillRect(top_left_x,top_left_y,window_width,window_height);
+  c.restore();
+
+  //Draw gears
+  drawGear(c,gear1_center_x,gear1_center_y,gear_radius,angle,'c90000');
+  var a2 = (angle + 30 >= 360) ? (angle + 30) - 360 : angle + 30;
+  drawGear(c,gear2_center_x,gear2_center_y,gear_radius,a2,'c90000');
+  c.restore();
+}
+
+
+
+/*
+* Globals Referenced: 
+* radius_2_tooth_height_ratio
+* radius_2_rim_ratio
+* tooth_height_2_tooth_width_ratio
+* tooth_width
+* gear_width
+* 
+*/
+function drawGear(ctx,cx,cy,radius,angle,color) {
+  ctx.save(); //This is fun to remove
+  ctx.translate(cx,cy); 
+ 
+  var i=0; 
+
+  //Do this for each angle
+  for (i=0; i< 6; i++) {
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = tooth_width;
+    var new_angle = angle + (60*i);
+    //log ("A" + i + "=" + new_angle);
+    var a = convertToRadians(normalizeAngle(new_angle));
+    var x1 =  radius * Math.cos(a);
+    var y1 =  radius * Math.sin(a);
+    var x2 =  (radius - tooth_height - gear_width) * Math.cos(a);
+    var y2 =  (radius - tooth_height - gear_width) * Math.sin(a);
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.closePath();
+    ctx.stroke();
+  }
+  //clear_log();  
+  
+  //Draw gear Rim
+  ctx.beginPath();
+  ctx.lineWidth = gear_width;
+  //ctx.arc(cX, cY, r, startingA, endingA, antiClockwise);
+  ctx.arc(0,0,radius,0,Math.PI*2,true);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function clear_log() {
+      document.getElementById('text').innerHTML = "";
+}
+function log(s) {
+      var newtext = s + "\n" + document.getElementById('text').innerHTML;
+      document.getElementById('text').innerHTML = newtext;
+}
+
+</script>
+</head>
+
+<body background='http://boxofcassettes.com/bg.jpg'>
+<!--
+<embed width="430" height="330" type="application/x-shockwave-flash" src="http://www.boxofcassettes.com:80/couch_flambeau/mixwidget.swf" wmode="transparent"></embed> 
+-->
+    <canvas width="500" height="500" id="pageCanvas">
+        You do not have a canvas enabled browser
+    </canvas>
+    <canvas width="430" height="269" id="cassette">
+    </canvas>
+<audio ontimeupdate="tick(event)" onplay="playCassette()" onpause="pauseCassette()" id="player" controls="controls" preload="auto" autobuffer>
+Your browser does not support the audio element.
+</audio>
+<input type=submit onclick="nextTrack()" value="nextTrack">
+<input type=submit onclick="previousTrack()" value="previousTrack">
+
+<div id='progress'>Time is here</div>
+<textarea id='text' rows=30 cols=80 >Some text here</textarea>
+<script>
+
+
+//------------------------- Animation Stuff --------------------------
+//--------------------------------------------------------------------
+var video = getPlayer();//document.getElementsByTagName('audio')[0];
+var draw_interval = 30; //ms
+var gear_rpm = 15;
+var degrees_per_minute = 15 * 360;
+var degrees_per_second = degrees_per_minute / 60;
+var angle_increase_per_interval = degrees_per_second *  draw_interval /1000;
+var isplaying = false;
+
+//------------------------- Cassette Outline --------------------------
+//---------------------------------------------------------------------
+var label_x_2_width_ratio = 1 / 20;
+var label_y_2_width_ratio = 1 / 20;
+var label_width_2_width_ratio = .85;
+var label_height_2_height_ratio = .65;
+var label_corner_side_2_width_ratio = .1;
+var bottom_x_2_width_ratio = 1 / 5;
+var bottom_width_bottom_2_width_ratio = .7;
+var bottom_height_2_height_ratio = .25;
+var bottom_width_top_2_bottom_width_bottom_ratio = .9;
+
+
+var cassette_ratio = 4/2.5;
+var cassette_width = 430;
+var cassette_rounding_radius = 10;
+var pixels_per_inch = cassette_width / 4;
+var cassette_height = cassette_width / cassette_ratio;
+var width_2_gear_center_x_ratio = 3.45; //4 * 8 / 9; //4 to 1 1/8
+var width_2_gear_center_y_ratio = 3.55; //width_2_gear_center_x_ratio;
+var width_2_gear_radius_ratio = 19;
+var radius_2_tooth_height_ratio = 5;
+var radius_2_rim_ratio = 10;               
+var tooth_height_2_tooth_width_ratio = 0.8;
+var tooth_width = 5; //FIXME - Calculate this !!! = 
+
+//Width of the gear rim
+var gear_width = 3; //FIXME - Calculate this !!! = 
+var tooth_height = tooth_width * tooth_height_2_tooth_width_ratio;
+var gear_radius = cassette_width / width_2_gear_radius_ratio;
+var gear1_center_x = cassette_width / width_2_gear_center_x_ratio;
+var gear2_center_x = cassette_width - gear1_center_x;              
+var gear1_center_y = cassette_width / width_2_gear_center_y_ratio;
+var gear2_center_y = gear1_center_y;
+var window_width = (cassette_width * 13/16) / 4;
+var window_height = (5/16)*pixels_per_inch ;
+var small_circular_hole_radius = (cassette_width * ((3/16) / 4)) / 2;
+var small_circular_hole_x1 = cassette_width * (1/4);
+var small_circular_hole_y1 = (2.5 - (1/20) - (3/32) ) * pixels_per_inch;
+var small_square_hole_side = (1/8) * pixels_per_inch;
+var small_square_hole_x1 = (23/16) * pixels_per_inch;
+var small_square_hole_y1 = cassette_height - ((1/8) * pixels_per_inch) - small_square_hole_side;
+
+var config = {
+  version:1,
+  play_index: -1,
+  title:'Open Source Music Sampler',
+  creator:'mixwidget.org',
+  label:{
+      url:'http://boxofcassettes.com/witch_house/image.jpg',
+      rotation:0,
+      x:0,
+      scale:25,
+      y:0,
+      mask:'body'
+  },
+  skin:{
+      url:'http://boxofcassettes.com/witch_house/skin.jpg',
+      imageenabled:'true',
+      shadow:0,
+      gloss:30,
+      outlines:20,
+      framecolor:'CCCCCC',
+      bodycolor:'66CCFF',
+      gearboxcolor:'CCCCCC',
+      gearcolor:'598B9F',
+      threadercolor:'CCCCCC',
+      text:{
+        size:18,
+        color:'FFFFFF',
+        bgalpha:0,
+        bgcolor:'FFFFFF',
+        align:'LEFT'
+      },
+      tracktext:{
+        x:26,
+        y:21,
+        width:260
+      },
+      artisttext:{
+        x:28,
+        y:38,
+        width:260
+      }
+  },//skin
+  playlist:{
+    tracklist:[
+      {
+      location:'http://www.boxofcassettes.com/rush/Rush-Working%20Man-320.mp3',
+      title:'Working Man',
+      creator:'Rush',
+      album:'',
+      duration:''
+      },
+      {
+      location:'http://boxofcassettes.com/test/test-test.mp3',
+      title:'Lucky Man',                
+      creator:'The Verve',   
+      album:'',
+      duration:''
+      }
+      ]
+  }//playlist
+};
+
+/*
+EXAMPLE PLAYLIST FORMAT:
+<?xml version="1.0" encoding="UTF-8" ?><playlist version="1" xmlns="http://xspf.org/ns/0/">
+<title>Test hits of rush</title>
+<info>http://dj80hd.com</info>
+<trackList>
+<track><annotation>Rush-Working Man-320</annotation><location>http://www.boxofcassettes.com:80/test_hits_of_rush/Rush-Working%20Man-320.mp3</location><info>http://dj80hd.com</info><image>http://www.boxofcassettes.com:80/test_hits_of_rush.jpg</image><creator>Rush</creator><title>Working Man</title></track>
+<track><annotation>Rush-Tom Sawyer-Chronicles (Disk 2)-320</annotation><location>http://www.boxofcassettes.com:80/test_hits_of_rush/Rush-Tom%20Sawyer-Chronicles%20%28Disk%202%29-320.mp3</location><info>http://dj80hd.com</info><image>http://www.boxofcassettes.com:80/test_hits_of_rush.jpg</image><creator>Rush</creator><title>Tom Sawyer</title></track>
+<track><annotation>Rush-The Spirit of Radio-Permanent Waves-320</annotation><location>http://www.boxofcassettes.com:80/test_hits_of_rush/Rush-The%20Spirit%20of%20Radio-Permanent%20Waves-320.mp3</location><info>http://dj80hd.com</info><image>http://www.boxofcassettes.com:80/test_hits_of_rush.jpg</image><creator>Rush</creator><title>The Spirit of Radio</title></track>
+</trackList></playlist>
+
+*/
+
+        //---------------
+        var recordRadius = 300;
+        var halfRecordRadius = recordRadius/2;
+        var labelRadius = 40;
+        var holeRadius = 8;
+        var halfLabelRadius = labelRadius/2;
+        var ctx = document.getElementById('pageCanvas').getContext('2d');
+        var c = document.getElementById('cassette').getContext('2d')
+        var angle = 0;
+	var recImg = new Image();
+        recImg.src='http://scissorsoft.com/pix/girls/girlsinfall.jpg';
+
+        var skin = new Image();
+        skin.src="http://www.boxofcassettes.com:80/skin.jpg";
+
+        //setInterval(drawVinyl, 15);
+        setInterval(drawCassette, draw_interval);
+
+var jsonText = JSON.stringify(xmlToJson(xml2Dom("<xml><foo><bar>1</bar><bar>2</bar></foo></xml>"))); 
+
+function readyStateHandler() {
+ log("s="+client.state+ " status=" +client.status);
+  if (client.readyState==4 && client.status==200)
+    {
+    alert(client.responseText);
+    }
+}
+config.play_index = -1;
+var client = new XMLHttpRequest(); 
+var playlist_url = 'http://boxofcassettes.com/rush/config.xml';//playlist.xspf';
+client.open("GET",playlist_url,true); 
+client.onreadystatechange=readyStateHandler;
+client.send();
+
+
+
+</script>
+
+
+</body>
+</html>
+
