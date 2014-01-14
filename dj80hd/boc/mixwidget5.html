@@ -68,10 +68,11 @@ function CassetteSacredGeometry() {
   this.small_square_hole_x1 = (23/16) * this.pixels_per_inch;
   this.small_square_hole_y1 = this.cassette_height - ((1/8) * this.pixels_per_inch) - this.small_square_hole_side;
 }
-function Track(data) {
-  this.title = data.title;
-  this.artist = data.artist;
-  this.url = data.url;
+//FIXME - Make general data param
+function Track(title,artist,url) {
+  this.title = title;
+  this.artist = artist;
+  this.url = url;
 }
 
 
@@ -108,36 +109,41 @@ CassetteView.prototype.tick = function() {
 function CassetteView(div_id,cassette) {
   this.div_id = div_id;
   this.canvas_id = div_id + "_canvas";
-  alert(this.canvas_id);
+  alert('Set canvas_id to: ' + this.canvas_id);
   //WHY WON"T THIS WORK ????
   this.div_el = document.getElementById('mycassette');
   //this.div_el = document.getElementById(div_id);
-  alert('div el ' + div_el);
+  alert('div el ' + this.div_el);
   this.cassette = cassette;
   this.g = new CassetteSacredGeometry();
   this.gear_angle = 0;
   
   //Create the audio player
   //<audio ontimeupdate="tick(event)" onplay="playCassette()" onpause="pauseCassette()" id="player" controls="controls" preload="auto" autobuffer>
-  var audio = document.createElement('audio');
-  audio.ontimeupdate = function() {}
-  audio.onplay = this.cassette.play
-  audio.onpause = this.cassette.pause
-  audio.id = div_id + "_audio";
-  audio.controls = "controls"
-  audio.preload = "auto";
-  audio.autobuffer = "true";
+  this.audio = document.createElement('audio');
+  this.audio.ontimeupdate = function() {}     ;
+    //DOES NOT WORK - Maybe we need a song loaded first !
+  this.audio.onplay = this.cassette.play.bind(this.cassette);
+    this.audio.onplay = "alert('go');";
+    this.audio.onplay = function() {alert('go2');}    ;
+  this.audio.onpause = this.cassette.pause.bind(this.cassette);
+  this.audio.id = div_id + "_audio";
+  this.audio.controls = "controls"
+  this.audio.preload = "auto";
+  this.audio.autobuffer = "true";
  
   
   //Create the View Area of the Cassette
-  var cassette_canvas = document.createElement('canvas');
-  cassette_canvas.width = 430;
-  cassette_canvas.height = 269;
-  cassette_canvas.id = this.canvas_id;
+  this.ccanvas = document.createElement('canvas');
+    this.ccanvas.width = 430;
+    this.ccanvas.height = 269;
+    this.ccanvas.id = this.canvas_id;
+    alert ("Created canvas: "   + this.ccanvas);
+
   //FIXME CHECK NOT NULL
   
-  this.div_el.appendChild(cassette_canvas);
-  this.div_el.appendChild(audio);
+  this.div_el.appendChild(this.ccanvas);
+  this.div_el.appendChild(this.audio);
   this.skin = new Image();
   this.skin.src="http://www.boxofcassettes.com:80/skin.jpg";
 
@@ -150,9 +156,16 @@ CassetteView.prototype.setBackground = function(url) {
   this.skin.src="http://www.boxofcassettes.com//80s_hardcore/skin.jpg";
 };
 
+//FIXME - How to get around the lack of this pointer ? drawCassette is called from global
 CassetteView.prototype.drawCassette = function() {
-  var c = document.getElementById(this.canvas_id).getContext('2d');
-  if (isplaying) incrementAngle();
+    //FIXME why is this.canvas_id undefined ?
+    alert('Try to get canvas for ' + this.canvas_id);
+  if (! this.ccanvas)   {
+        console.log('this.ccanvas is ' + this.ccanvas)    ;
+        return;
+  }
+  var c = this.ccanvas.getContext('2d');
+  if (this.isplaying) incrementAngle();
   c.save();
   roundRect(c,0,0,this.g.cassette_width,this.g.cassette_height,this.g.cassette_rounding_radius);
   c.clip();
@@ -230,6 +243,7 @@ function Cassette(div_id) {
   this.view = new CassetteView(div_id,this);
 
 
+
 }
 Cassette.prototype.setBackground = function(url) {
 //http://www.boxofcassettes.com//80s_hardcore/skin.jpg
@@ -238,6 +252,7 @@ Cassette.prototype.setBackground = function(url) {
 };
 Cassette.prototype.play = function() {
   var t = this.model.next();
+    alert('play called ' +t );
   this.view.playTrack(t);
 };
 Cassette.prototype.pause = function() {
@@ -247,6 +262,14 @@ Cassette.prototype.pause = function() {
 Cassette.prototype.addTrack = function(title,artist,url) {
   var t = new Track(title,artist,url);
   this.model.addTrack(t);
+  console.log('added ' + t.title) ;
+  if (!this.view.audio.src) {
+      this.view.audio.src = t.url;
+      this.model.trackIndex = 0;
+  }
+  console.log('audio src is ' + this.view.audio.src)    ;
+
+
 };
 
 
@@ -257,7 +280,8 @@ Cassette.prototype.next = function() {
 };
 Cassette.prototype.rockOut = function() {
   //setInterval(drawVinyl, 15);
-  setInterval(this.view.drawCassette, draw_interval);
+  //var c = this.view.ccanvas; //Need this for lack of this pointer
+  setInterval(this.view.drawCassette.bind(this.view), draw_interval);
 };
 
 Cassette.prototype.setMessage = function(message) {
@@ -320,66 +344,7 @@ RetroPlayer:
 
 */
 
-/**
-* Takes a text containing xml and returns a proper xml object
-* Should work equally well in IE or other.
-*/ 
-function xml2Dom(text) {
-  var xmlDoc;
-  if (window.DOMParser) {
-    parser=new DOMParser();
-    xmlDoc=parser.parseFromString(text,"text/xml");
-  }
-  else { // Internet Explorer
-    xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
-    xmlDoc.async="false";
-    xmlDoc.loadXML(text); 
-  }
-  return xmlDoc;
-}//xmlToDom
 
-/**
-* Takes a dom object and returns it as a json object
-* FIXME - Add an example here to give the flavor of what it will look like.
-*/ 
-function xmlToJson(xml) {
-
-  // Create the return object
-  var obj = {};
-
-  if (xml.nodeType == 1) { // node type 1 = element
-    // do attributes
-    if (xml.attributes.length > 0) {
-    obj["@attributes"] = {};
-      for (var j = 0; j < xml.attributes.length; j++) {
-        var attribute = xml.attributes.item(j);
-        obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
-      }
-    }
-  } else if (xml.nodeType == 3) { // text
-    obj = xml.nodeValue;
-  }
-
-  // do children
-  if (xml.hasChildNodes()) {
-    for(var i = 0; i < xml.childNodes.length; i++) {
-      var item = xml.childNodes.item(i);
-      var nodeName = item.nodeName;
-	  //FIXME - Explain this case when node name is underfined.
-      if (typeof(obj[nodeName]) == "undefined") {
-        obj[nodeName] = xmlToJson(item);
-      } else {
-        if (typeof(obj[nodeName].length) == "undefined") {
-          var old = obj[nodeName];
-          obj[nodeName] = [];
-          obj[nodeName].push(old);
-        }
-        obj[nodeName].push(xmlToJson(item));
-      }
-    }
-  }
-  return obj;
-}
 
 /**
 * Function that updates time indication
@@ -828,23 +793,16 @@ EXAMPLE PLAYLIST FORMAT:
         //setInterval(drawVinyl, 15);
         setInterval(drawCassette, draw_interval);
 
-var jsonText = JSON.stringify(xmlToJson(xml2Dom("<xml><foo><bar>1</bar><bar>2</bar></foo></xml>"))); 
 
 function readyStateHandler() {
  log("s="+client.state+ " status=" +client.status);
   if (client.readyState==4 && client.status==200)
     {
-    alert(client.responseText);
+    //alert(client.responseText);
     }
 }
 config.play_index = -1;
-/*
-var client = new XMLHttpRequest(); 
-var playlist_url = 'http://boxofcassettes.com/rush/config.xml';//playlist.xspf';
-client.open("GET",playlist_url,true); 
-client.onreadystatechange=readyStateHandler;
-client.send();
-*/
+
 
 
 //cass = new Cassette();
@@ -857,7 +815,6 @@ client.send();
 <script>
 //document.write('<div id=mycassette></div>');
 var el = document.getElementById('mycassette');
-alert ("EL" + el);
 var myCassette = new Cassette('mycassette');
 //myCassette.setGearColor('FF0045');
 myCassette.setBackground('http://www.boxofcassettes.com/80s_hardcore/skin.jpg');
