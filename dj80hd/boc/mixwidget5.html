@@ -123,10 +123,9 @@ function CassetteView(div_id,cassette) {
   this.audio = document.createElement('audio');
   this.audio.ontimeupdate = function() {}     ;
     //DOES NOT WORK - Maybe we need a song loaded first !
-  this.audio.onplay = this.cassette.play.bind(this.cassette);
-    this.audio.onplay = "alert('go');";
-    this.audio.onplay = function() {alert('go2');}    ;
-  this.audio.onpause = this.cassette.pause.bind(this.cassette);
+  //this.audio.addEventListener('play',this.cassette.play.bind(this.cassette));
+  this.audio.addEventListener('play', function(){alert('go2'); });
+  //this.audio.onpause = this.cassette.pause.bind(this.cassette);
   this.audio.id = div_id + "_audio";
   this.audio.controls = "controls"
   this.audio.preload = "auto";
@@ -158,14 +157,15 @@ CassetteView.prototype.setBackground = function(url) {
 
 //FIXME - How to get around the lack of this pointer ? drawCassette is called from global
 CassetteView.prototype.drawCassette = function() {
-    //FIXME why is this.canvas_id undefined ?
-    alert('Try to get canvas for ' + this.canvas_id);
+
   if (! this.ccanvas)   {
         console.log('this.ccanvas is ' + this.ccanvas)    ;
         return;
   }
   var c = this.ccanvas.getContext('2d');
-  if (this.isplaying) incrementAngle();
+    //console.log('playing...')
+  //if (this.isplaying)
+      this.incrementAngle();
   c.save();
   roundRect(c,0,0,this.g.cassette_width,this.g.cassette_height,this.g.cassette_rounding_radius);
   c.clip();
@@ -220,8 +220,11 @@ CassetteView.prototype.drawCassette = function() {
   //FIXME - Add code to draw tape
   
   //Draw gears
-  drawGear(c,this.g.gear1_center_x,this.g.gear1_center_y,this.g.gear_radius,this.g.angle,'c90000');
+  //drawGear(c,this.g.gear1_center_x,this.g.gear1_center_y,this.g.gear_radius,this.g.angle,'c90000');
+
+  //Draw Second Gear
   var a2 = (this.gear_angle + 30 >= 360) ? (this.gear_angle + 30) - 360 : this.gear_angle + 30;
+  drawGear(c,this.g.gear1_center_x,this.g.gear1_center_y,this.g.gear_radius,a2,'c90000');
   drawGear(c,this.g.gear2_center_x,this.g.gear2_center_y,this.g.gear_radius,a2,'c90000');
   c.restore();
 };
@@ -235,6 +238,14 @@ CassetteView.prototype.playTrack = function(t) {
   this.audio.play();
   this.isplaying = true;
   log("PLAYING " + this.src);
+};
+CassetteView.prototype.incrementAngle = function() {
+    //FIXME - Don't use globals.
+    this.gear_angle = this.gear_angle - angle_increase_per_interval;
+    if(this.gear_angle < 0) {
+        this.gear_angle = 359;
+    }
+
 };
 //====================================================== Cassette (controller) ====================================
 function Cassette(div_id) {
@@ -505,7 +516,8 @@ function previousTrack() {
 */
 function drawCassette() {
   var c = document.getElementById('cassette').getContext('2d');
-  if (isplaying) incrementAngle();
+  if (isplaying)
+      incrementAngle();
   c.save();
   roundRect(c,0,0,cassette_width,cassette_height,cassette_rounding_radius);
   c.clip();
