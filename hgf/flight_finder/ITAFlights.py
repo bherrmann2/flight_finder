@@ -1,7 +1,5 @@
 __author__ = 'Brad'
 
-from Trip import Trip
-
 class ITAFlights():
     def __init__(self, flights):
         self.flights = flights
