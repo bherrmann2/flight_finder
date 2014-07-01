@@ -17,7 +17,7 @@ class ITACalendar:
     def find_cheapest_rt(self):
         calendar = self.data["result"]["calendar"]
         minPrice = self.get_lowest_price()
-        dates = []
+        cheapest_dates = []
         for month in calendar["months"]:
             year = month["year"]
             the_month = month["month"]
@@ -33,6 +33,7 @@ class ITACalendar:
                     day_num = day_num+1
                     price = day.get("minPrice")
                     if price == minPrice:
+                        dates = []
                         dates.append(str(year) + "-" + str(the_month) + "-" + str(date))
                         for trip in day["tripDuration"]["options"]:
                             #for flight in trip["options"]:
@@ -40,4 +41,5 @@ class ITACalendar:
                                 arrival = trip["solution"]["itinerary"]["arrival"]
                                 arrival = arrival[:10] #strip off the time
                                 dates.append(arrival)
-                                return dates
+                                cheapest_dates.append(dates)
+        return cheapest_dates

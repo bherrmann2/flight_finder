@@ -1,10 +1,9 @@
 __author__ = 'Brad'
 
 class Trip():
-    def __init__(self, origin, destination, leave, ret, ppm):
-        self.origin = origin
-        self.destination = destination
-        self.leave = leave
-        self.ret = ret
+    def __init__(self, outbound, inbound, ppm):
         self.ppm = ppm
+        self.outbound = outbound
+        self.inbound = inbound
 
+    def
