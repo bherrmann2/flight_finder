@@ -2,6 +2,8 @@ __author__ = 'Brad Herrmann'
 
 import json
 import requests
+import datetime
+import threading
 from ITACalendar import ITACalendar
 from ITATrips import ITATrips
 
@@ -16,26 +18,99 @@ class ITADao:
 
     def __init__(self, dest, start, end):
         self.dest = dest
-        self.start = start
-        self.end = end
+        self.start_date = start
+        self.end_date = end
 
-    def get_calendar_data(self):
-        payload = "name=calendar&summarizers=currencyNotice%2CovernightFlightsCalendar%2CitineraryStopCountList%2CitineraryCarrierList%2Ccalendar&format=JSON&inputs=%7B%22slices%22%3A%5B%7B%22origins%22%3A%5B%22ORD%22%5D%2C%22originPreferCity%22%3Afalse%2C%22destinations%22%3A%5B%22"+self.dest+"%22%5D%2C%22destinationPreferCity%22%3Afalse%7D%2C%7B%22destinations%22%3A%5B%22ORD%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22origins%22%3A%5B%22"+self.dest+"%22%5D%2C%22originPreferCity%22%3Afalse%7D%5D%2C%22startDate%22%3A%22"+self.start+"%22%2C%22layover%22%3A%7B%22max%22%3A6%2C%22min%22%3A3%7D%2C%22pax%22%3A%7B%22adults%22%3A1%7D%2C%22cabin%22%3A%22COACH%22%2C%22changeOfAirport%22%3Afalse%2C%22checkAvailability%22%3Atrue%2C%22firstDayOfWeek%22%3A%22SUNDAY%22%2C%22endDate%22%3A%22"+self.end+"%22%7D"
-        page = requests.post("http://matrix.itasoftware.com/xhr/shop/search", data=payload, headers=ITADao.headers)
-        text = page.text[4:]
-        #print text
-        data = json.loads(text)
-        return ITACalendar(data)
+    def get_flight_data(self):
+        amt_of_days = (self.end_date-self.start_date).days
+        searches_needed = amt_of_days/30
+        months = []
+        threads = []
+        start = self.start_date
+        end = self.start_date + datetime.timedelta(days=29)
 
-    """
-    Gets the RT flights for the particular dates
-    """
-    def get_trips(self, leave, ret, session):
-        #need to get the trip length from the calendar and put in max and min
-        payload = 'name=calendarFollowup&session=' + session + '&summarizers=carrierStopMatrix%2CcurrencyNotice%2CsolutionList%2CitineraryPriceSlider%2CitineraryCarrierList%2CitineraryDepartureTimeRanges%2CitineraryArrivalTimeRanges%2CdurationSliderItinerary%2CitineraryOrigins%2CitineraryDestinations%2CitineraryStopCountList%2CwarningsItinerary&format=JSON&inputs=%7B%22slices%22%3A%5B%7B%22origins%22%3A%5B%22ORD%22%5D%2C%22originPreferCity%22%3Afalse%2C%22destinations%22%3A%5B%22' + self.dest + '%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22date%22%3A%22' + leave + '%22%7D%2C%7B%22destinations%22%3A%5B%22ORD%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22origins%22%3A%5B%22' + self.dest + '%22%5D%2C%22originPreferCity%22%3Afalse%2C%22date%22%3A%22' + ret + '%22%7D%5D%2C%22startDate%22%3A%22' + self.start + '%22%2C%22layover%22%3A%7B%22max%22%3A3%2C%22min%22%3A3%7D%2C%22pax%22%3A%7B%22adults%22%3A1%7D%2C%22cabin%22%3A%22COACH%22%2C%22changeOfAirport%22%3Afalse%2C%22checkAvailability%22%3Atrue%2C%22firstDayOfWeek%22%3A%22SUNDAY%22%2C%22endDate%22%3A%22' + self.end + '%22%2C%22page%22%3A%7B%22size%22%3A30%7D%2C%22sorts%22%3A%22default%22%7D'
-        page = requests.post("http://matrix.itasoftware.com/xhr/shop/search", data=payload, headers=ITADao.headers)
-        text = page.text[4:]
-        #print text
-        data = json.loads(text)
-        flights = data['result']['solutionList']['solutions']
-        return ITATrips(flights)
+        for x in range(0, searches_needed):
+            t = self.CalendarRequestThread(self.dest, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'), months)
+            t.start()
+            threads.append(t)
+            start = end + datetime.timedelta(days=1)
+            end = start + datetime.timedelta(days=29)
+
+        rem = amt_of_days % 30
+        if rem != 0:
+            end = start + datetime.timedelta(days=rem-1)
+            t = self.CalendarRequestThread(self.dest, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'), months)
+            t.start()
+            threads.append(t)
+
+        for t in threads:
+            t.join()
+
+        threads = []
+        trips = []
+        for calendar in months:
+            cheapest_dates = calendar.find_cheapest_rt()
+            for dates in cheapest_dates:
+                t = self.TripRequestThread(self.dest, dates[0], dates[1], self.start_date.strftime('%Y-%m-%d'), self.end_date.strftime('%Y-%m-%d'), calendar.get_session_id(), trips)
+                t.start()
+                threads.append(t)
+
+        for t in threads:
+            t.join()
+
+        ita_trips = ITATrips()
+        for trip_data in trips:
+            ita_trips._add_trips(trip_data)
+
+        return ita_trips
+
+    class CalendarRequestThread (threading.Thread):
+        def __init__(self, dest, start_date, end_date, results):
+            threading.Thread.__init__(self)
+            self.results = results
+            self.dest = dest
+            self.start_date = start_date
+            self.end_date = end_date
+
+        def run(self):
+            calendar = self.__get_calendar_data()
+            self.results.append(calendar)
+
+        def __get_calendar_data(self):
+            payload = "name=calendar&summarizers=currencyNotice%2CovernightFlightsCalendar%2CitineraryStopCountList%2CitineraryCarrierList%2Ccalendar&format=JSON&inputs=%7B%22slices%22%3A%5B%7B%22origins%22%3A%5B%22ORD%22%5D%2C%22originPreferCity%22%3Afalse%2C%22destinations%22%3A%5B%22"+self.dest+"%22%5D%2C%22destinationPreferCity%22%3Afalse%7D%2C%7B%22destinations%22%3A%5B%22ORD%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22origins%22%3A%5B%22"+self.dest+"%22%5D%2C%22originPreferCity%22%3Afalse%7D%5D%2C%22startDate%22%3A%22"+self.start_date+"%22%2C%22layover%22%3A%7B%22max%22%3A6%2C%22min%22%3A3%7D%2C%22pax%22%3A%7B%22adults%22%3A1%7D%2C%22cabin%22%3A%22COACH%22%2C%22changeOfAirport%22%3Afalse%2C%22checkAvailability%22%3Atrue%2C%22firstDayOfWeek%22%3A%22SUNDAY%22%2C%22endDate%22%3A%22"+self.end_date+"%22%7D"
+            page = requests.post("http://matrix.itasoftware.com/xhr/shop/search", data=payload, headers=ITADao.headers)
+            text = page.text[4:]
+            #print text
+            data = json.loads(text)
+            return ITACalendar(data)
+
+    class TripRequestThread (threading.Thread):
+        def __init__(self, dest, outbound, inbound, start, end, session, results):
+            threading.Thread.__init__(self)
+            self.results = results
+            self.outbound = outbound
+            self.inbound = inbound
+            self.session = session
+            self.dest = dest
+            self.start_date = start
+            self.end_date = end
+
+        def run(self):
+            trips = self.get_trips(self.outbound, self.inbound, self.session)
+            self.results.append(trips)
+
+
+        """
+        Gets the RT flights for the particular dates
+        """
+        def get_trips(self, leave, ret, session):
+            #need to get the trip length from the calendar and put in max and min
+            payload = 'name=calendarFollowup&session=' + session + '&summarizers=carrierStopMatrix%2CcurrencyNotice%2CsolutionList%2CitineraryPriceSlider%2CitineraryCarrierList%2CitineraryDepartureTimeRanges%2CitineraryArrivalTimeRanges%2CdurationSliderItinerary%2CitineraryOrigins%2CitineraryDestinations%2CitineraryStopCountList%2CwarningsItinerary&format=JSON&inputs=%7B%22slices%22%3A%5B%7B%22origins%22%3A%5B%22ORD%22%5D%2C%22originPreferCity%22%3Afalse%2C%22destinations%22%3A%5B%22' + self.dest + '%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22date%22%3A%22' + leave + '%22%7D%2C%7B%22destinations%22%3A%5B%22ORD%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22origins%22%3A%5B%22' + self.dest + '%22%5D%2C%22originPreferCity%22%3Afalse%2C%22date%22%3A%22' + ret + '%22%7D%5D%2C%22startDate%22%3A%22' + self.start_date + '%22%2C%22layover%22%3A%7B%22max%22%3A3%2C%22min%22%3A3%7D%2C%22pax%22%3A%7B%22adults%22%3A1%7D%2C%22cabin%22%3A%22COACH%22%2C%22changeOfAirport%22%3Afalse%2C%22checkAvailability%22%3Atrue%2C%22firstDayOfWeek%22%3A%22SUNDAY%22%2C%22endDate%22%3A%22' + self.end_date + '%22%2C%22page%22%3A%7B%22size%22%3A30%7D%2C%22sorts%22%3A%22default%22%7D'
+            page = requests.post("http://matrix.itasoftware.com/xhr/shop/search", data=payload, headers=ITADao.headers)
+            text = page.text[4:]
+            #print text
+            data = json.loads(text)
+            flights = data['result']['solutionList']['solutions']
+            return flights
+
+
