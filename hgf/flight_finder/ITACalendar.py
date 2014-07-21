@@ -1,5 +1,8 @@
 __author__ = 'Brad Herrmann'
 
+"""
+Handles the calendar data received from ITA
+"""
 class ITACalendar:
     def __init__(self, data):
         self.data = data
@@ -12,7 +15,8 @@ class ITACalendar:
 
     """
     finds the cheapest round trip
-    returns a list containing the day leaving and the day returning
+    returns a list containing the days leaving and the days returning for each
+    pair matching the cheapest round trip. The days are in string format
     """
     def find_cheapest_rt(self):
         calendar = self.data["result"]["calendar"]
@@ -35,12 +39,12 @@ class ITACalendar:
                     if price == minPrice:
                         outbound = str(year) + "-" + str(the_month) + "-" + str(date)
                         for trip in day["tripDuration"]["options"]:
-                            #for flight in trip["options"]:
+                            #found a day with the cheapest price
                             if minPrice == trip["minPrice"]:
                                 dates = []
-                                dates.append(outbound)
+                                dates.append(outbound) #append the leaving date
                                 arrival = trip["solution"]["itinerary"]["arrival"]
                                 arrival = arrival[:10] #strip off the time
-                                dates.append(arrival)
+                                dates.append(arrival) #append the returning date
                                 cheapest_dates.append(dates)
         return cheapest_dates

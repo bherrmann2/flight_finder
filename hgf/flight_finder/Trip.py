@@ -1,5 +1,8 @@
 __author__ = 'Brad'
 
+"""
+Stores the trip information such as the cost, ppm, outbound and inbound flights, and distance
+"""
 class Trip():
     def __init__(self, outbound, inbound, ppm, price, distance):
         self.ppm = ppm

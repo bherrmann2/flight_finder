@@ -7,7 +7,9 @@ import threading
 from ITACalendar import ITACalendar
 from ITATrips import ITATrips
 
-
+"""
+Retrieves the trip information from ITA Software
+"""
 class ITADao:
 
     headers = \
@@ -21,7 +23,12 @@ class ITADao:
         self.start_date = start
         self.end_date = end
 
-    def get_flight_data(self):
+    """
+    Gets the trip data from ITA for the destination and date range
+    """
+    def get_trip_data(self):
+        #breaks up the date in range into sections of 30 days each.
+        #this is done because ITA doesn't handle chunks larger than 30 days each that well
         amt_of_days = (self.end_date-self.start_date).days
         searches_needed = amt_of_days/30
         months = []
@@ -29,6 +36,7 @@ class ITADao:
         start = self.start_date
         end = self.start_date + datetime.timedelta(days=29)
 
+        #creates a thread that requests a calendar for each 30 day chunk
         for x in range(0, searches_needed):
             t = self.CalendarRequestThread(self.dest, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'), months)
             t.start()
@@ -36,6 +44,7 @@ class ITADao:
             start = end + datetime.timedelta(days=1)
             end = start + datetime.timedelta(days=29)
 
+        #creates a thread for the remainder if the date range is not divisible by 30
         rem = amt_of_days % 30
         if rem != 0:
             end = start + datetime.timedelta(days=rem-1)
@@ -43,14 +52,19 @@ class ITADao:
             t.start()
             threads.append(t)
 
+        #blocks until the threads finish
         for t in threads:
             t.join()
 
         threads = []
         trips = []
+        #goes through each calendar retrieved
         for calendar in months:
+            #only gets the cheapest dates in the calendar since those most likely have the best deal and to limit the
+            #request count to appear more human
             cheapest_dates = calendar.find_cheapest_rt()
             for dates in cheapest_dates:
+                #create a separate thread that requests the trips for the cheapest dates
                 t = self.TripRequestThread(self.dest, dates[0], dates[1], self.start_date.strftime('%Y-%m-%d'), self.end_date.strftime('%Y-%m-%d'), calendar.get_session_id(), trips)
                 t.start()
                 threads.append(t)
@@ -58,12 +72,16 @@ class ITADao:
         for t in threads:
             t.join()
 
+        #combine all the returned trip data from all the threads
         ita_trips = ITATrips()
         for trip_data in trips:
             ita_trips._add_trips(trip_data)
 
         return ita_trips
 
+    """
+    Thread that handles the request/response for the calendar data from ITA
+    """
     class CalendarRequestThread (threading.Thread):
         def __init__(self, dest, start_date, end_date, results):
             threading.Thread.__init__(self)
@@ -76,6 +94,9 @@ class ITADao:
             calendar = self.__get_calendar_data()
             self.results.append(calendar)
 
+        """
+        gets the calendar data from ITA
+        """
         def __get_calendar_data(self):
             payload = "name=calendar&summarizers=currencyNotice%2CovernightFlightsCalendar%2CitineraryStopCountList%2CitineraryCarrierList%2Ccalendar&format=JSON&inputs=%7B%22slices%22%3A%5B%7B%22origins%22%3A%5B%22ORD%22%5D%2C%22originPreferCity%22%3Afalse%2C%22destinations%22%3A%5B%22"+self.dest+"%22%5D%2C%22destinationPreferCity%22%3Afalse%7D%2C%7B%22destinations%22%3A%5B%22ORD%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22origins%22%3A%5B%22"+self.dest+"%22%5D%2C%22originPreferCity%22%3Afalse%7D%5D%2C%22startDate%22%3A%22"+self.start_date+"%22%2C%22layover%22%3A%7B%22max%22%3A6%2C%22min%22%3A3%7D%2C%22pax%22%3A%7B%22adults%22%3A1%7D%2C%22cabin%22%3A%22COACH%22%2C%22changeOfAirport%22%3Afalse%2C%22checkAvailability%22%3Atrue%2C%22firstDayOfWeek%22%3A%22SUNDAY%22%2C%22endDate%22%3A%22"+self.end_date+"%22%7D"
             page = requests.post("http://matrix.itasoftware.com/xhr/shop/search", data=payload, headers=ITADao.headers)
@@ -84,6 +105,10 @@ class ITADao:
             data = json.loads(text)
             return ITACalendar(data)
 
+
+    """
+    Thread that handles the request/response for the Trip data from ITA
+    """
     class TripRequestThread (threading.Thread):
         def __init__(self, dest, outbound, inbound, start, end, session, results):
             threading.Thread.__init__(self)

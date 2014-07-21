@@ -19,10 +19,8 @@ end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
 
 
 for dest in destinations:
-
-
     dao = ITADao(dest, start_date, end_date)
-    trips = dao.get_flight_data()
+    trips = dao.get_trip_data()
     trips = trips.find_best_value()
     trips = trips.find_cheapest_trips()
     tlist = trips.get_trips()

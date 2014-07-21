@@ -3,6 +3,9 @@ __author__ = 'Brad'
 from Flight import Flight
 from Trip import Trip
 
+"""
+Handles the trip data returned from ITA
+"""
 class ITATrips():
     def __init__(self, trips = []):
         self.trips = trips
@@ -85,15 +88,19 @@ class ITATrips():
     def get_trips(self):
         return self.trips
 
-
+    """
+    Gets the trip information out of the json returned from ITA
+    This should only be called if the caller understands the json returned by ITA
+    """
     def __get_trip(self, trip):
         price = float(trip['ext']['price'][3:])
-        tppm = float(trip['ext']['pricePerMile'][3:])
-        tppm = round(tppm, 4)
+        ppm = float(trip['ext']['pricePerMile'][3:])
+        ppm = round(ppm, 4)
         itin = trip['itinerary']
         distance = int(itin['distance']['value'])
 
         flights = []
+        #get the flights out of the itinerary
         for flight in itin['slices']:
             stops = []
             layovers = flight.get('stops')
@@ -104,4 +111,4 @@ class ITATrips():
             fl = Flight(flight['origin']['code'], flight['destination']['code'],flight['departure'], flight['arrival'], flight['duration'], stops)
             flights.append(fl)
 
-        return Trip(flights[0], flights[1], tppm, price, distance)
+        return Trip(flights[0], flights[1], ppm, price, distance)
