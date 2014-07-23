@@ -1,1 +1,0 @@
-Deleting edges can be wonky at times, needs more testing
