@@ -7,7 +7,9 @@ from Trip import Trip
 Handles the trip data returned from ITA
 """
 class ITATrips():
-    def __init__(self, trips = []):
+    def __init__(self, trips = None):
+        if trips is None:
+            trips = []
         self.trips = trips
 
     """
@@ -58,7 +60,7 @@ class ITATrips():
             if trip.price == lowest.price:
                 cheapest.append(trip)
             else:
-                break;
+                break
 
         return ITATrips(cheapest)
 
@@ -78,7 +80,7 @@ class ITATrips():
             if trip.ppm == lowest.ppm:
                 best.append(trip)
             else:
-                break;
+                break
 
         return ITATrips(best)
 

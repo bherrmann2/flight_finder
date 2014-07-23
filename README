@@ -1,0 +1,8 @@
+This program allows you to search for flights to any number of destinations with variable
+trip length for up to 330 days in the future.
+
+Its purpose is to make it easier to find cheap flights with no specific destination or time frame in mind.
+
+to run:
+python FlightFinder.py
+then follow the prompts

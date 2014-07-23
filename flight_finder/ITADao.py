@@ -40,7 +40,7 @@ class ITADao:
 
         #creates a thread that requests a calendar for each 30 day chunk
         for x in range(0, searches_needed):
-            t = self.CalendarRequestThread(self.dest, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'), self.min_length, self.max_length, months)
+            t = CalendarRequestThread(self.dest, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'), self.min_length, self.max_length, months)
             t.start()
             threads.append(t)
             start = end + datetime.timedelta(days=1)
@@ -50,7 +50,7 @@ class ITADao:
         rem = amt_of_days % 30
         if rem != 0:
             end = start + datetime.timedelta(days=rem-1)
-            t = self.CalendarRequestThread(self.dest, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'), months)
+            t = CalendarRequestThread(self.dest, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'), self.min_length, self.max_length, months)
             t.start()
             threads.append(t)
 
@@ -67,7 +67,7 @@ class ITADao:
             cheapest_dates = calendar.find_cheapest_rt()
             for dates in cheapest_dates:
                 #create a separate thread that requests the trips for the cheapest dates
-                t = self.TripRequestThread(self.dest, dates[0], dates[1], self.start_date.strftime('%Y-%m-%d'), self.end_date.strftime('%Y-%m-%d'), self.min_length, self.max_length, calendar.get_session_id(), trips)
+                t = TripRequestThread(self.dest, dates[0], dates[1], self.start_date.strftime('%Y-%m-%d'), self.end_date.strftime('%Y-%m-%d'), self.min_length, self.max_length, calendar.get_session_id(), trips)
                 t.start()
                 threads.append(t)
 
@@ -81,69 +81,69 @@ class ITADao:
 
         return ita_trips
 
-    """
-    Thread that handles the request/response for the calendar data from ITA
-    """
-    class CalendarRequestThread (threading.Thread):
-        #needs to be refactored. too many args
-        def __init__(self, dest, start_date, end_date, min_length, max_length, results):
-            threading.Thread.__init__(self)
-            self.results = results
-            self.dest = dest
-            self.start_date = start_date
-            self.end_date = end_date
-            self.min_length = min_length
-            self.max_length = max_length
+"""
+Thread that handles the request/response for the calendar data from ITA
+"""
+class CalendarRequestThread (threading.Thread):
+    #needs to be refactored. too many args
+    def __init__(self, dest, start_date, end_date, min_length, max_length, results):
+        threading.Thread.__init__(self)
+        self.results = results
+        self.dest = dest
+        self.start_date = start_date
+        self.end_date = end_date
+        self.min_length = min_length
+        self.max_length = max_length
 
-        def run(self):
-            calendar = self.__get_calendar_data()
-            self.results.append(calendar)
-
-        """
-        gets the calendar data from ITA
-        """
-        def __get_calendar_data(self):
-            payload = "name=calendar&summarizers=currencyNotice%2CovernightFlightsCalendar%2CitineraryStopCountList%2CitineraryCarrierList%2Ccalendar&format=JSON&inputs=%7B%22slices%22%3A%5B%7B%22origins%22%3A%5B%22ORD%22%5D%2C%22originPreferCity%22%3Afalse%2C%22destinations%22%3A%5B%22"+self.dest+"%22%5D%2C%22destinationPreferCity%22%3Afalse%7D%2C%7B%22destinations%22%3A%5B%22ORD%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22origins%22%3A%5B%22"+self.dest+"%22%5D%2C%22originPreferCity%22%3Afalse%7D%5D%2C%22startDate%22%3A%22"+self.start_date+"%22%2C%22layover%22%3A%7B%22max%22%3A"+self.max_length+"%2C%22min%22%3A"+self.min_length+"%7D%2C%22pax%22%3A%7B%22adults%22%3A1%7D%2C%22cabin%22%3A%22COACH%22%2C%22changeOfAirport%22%3Afalse%2C%22checkAvailability%22%3Atrue%2C%22firstDayOfWeek%22%3A%22SUNDAY%22%2C%22endDate%22%3A%22"+self.end_date+"%22%7D"
-            page = requests.post("http://matrix.itasoftware.com/xhr/shop/search", data=payload, headers=ITADao.headers)
-            text = page.text[4:]
-            #print text
-            data = json.loads(text)
-            return ITACalendar(data)
-
+    def run(self):
+        calendar = self.__get_calendar_data()
+        self.results.append(calendar)
 
     """
-    Thread that handles the request/response for the Trip data from ITA
+    gets the calendar data from ITA
     """
-    class TripRequestThread (threading.Thread):
-        #this needs to be refactored. Too many args
-        def __init__(self, dest, outbound, inbound, start, end, min_length, max_length, session, results):
-            threading.Thread.__init__(self)
-            self.results = results
-            self.outbound = outbound
-            self.inbound = inbound
-            self.session = session
-            self.dest = dest
-            self.start_date = start
-            self.end_date = end
-            self.min_length = min_length
-            self.max_length = max_length
-
-        def run(self):
-            trips = self.get_trips(self.outbound, self.inbound, self.session)
-            self.results.append(trips)
+    def __get_calendar_data(self):
+        payload = "name=calendar&summarizers=currencyNotice%2CovernightFlightsCalendar%2CitineraryStopCountList%2CitineraryCarrierList%2Ccalendar&format=JSON&inputs=%7B%22slices%22%3A%5B%7B%22origins%22%3A%5B%22ORD%22%5D%2C%22originPreferCity%22%3Afalse%2C%22destinations%22%3A%5B%22"+self.dest+"%22%5D%2C%22destinationPreferCity%22%3Afalse%7D%2C%7B%22destinations%22%3A%5B%22ORD%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22origins%22%3A%5B%22"+self.dest+"%22%5D%2C%22originPreferCity%22%3Afalse%7D%5D%2C%22startDate%22%3A%22"+self.start_date+"%22%2C%22layover%22%3A%7B%22max%22%3A"+self.max_length+"%2C%22min%22%3A"+self.min_length+"%7D%2C%22pax%22%3A%7B%22adults%22%3A1%7D%2C%22cabin%22%3A%22COACH%22%2C%22changeOfAirport%22%3Afalse%2C%22checkAvailability%22%3Atrue%2C%22firstDayOfWeek%22%3A%22SUNDAY%22%2C%22endDate%22%3A%22"+self.end_date+"%22%7D"
+        page = requests.post("http://matrix.itasoftware.com/xhr/shop/search", data=payload, headers=ITADao.headers)
+        text = page.text[4:]
+        #print text
+        data = json.loads(text)
+        return ITACalendar(data)
 
 
-        """
-        Gets the RT flights for the particular dates
-        """
-        def get_trips(self, leave, ret, session):
-            #need to get the trip length from the calendar and put in max and min
-            payload = 'name=calendarFollowup&session=' + session + '&summarizers=carrierStopMatrix%2CcurrencyNotice%2CsolutionList%2CitineraryPriceSlider%2CitineraryCarrierList%2CitineraryDepartureTimeRanges%2CitineraryArrivalTimeRanges%2CdurationSliderItinerary%2CitineraryOrigins%2CitineraryDestinations%2CitineraryStopCountList%2CwarningsItinerary&format=JSON&inputs=%7B%22slices%22%3A%5B%7B%22origins%22%3A%5B%22ORD%22%5D%2C%22originPreferCity%22%3Afalse%2C%22destinations%22%3A%5B%22' + self.dest + '%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22date%22%3A%22' + leave + '%22%7D%2C%7B%22destinations%22%3A%5B%22ORD%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22origins%22%3A%5B%22' + self.dest + '%22%5D%2C%22originPreferCity%22%3Afalse%2C%22date%22%3A%22' + ret + '%22%7D%5D%2C%22startDate%22%3A%22' + self.start_date + '%22%2C%22layover%22%3A%7B%22max%22%3A'+self.max_length+'%2C%22min%22%3A'+self.min_length+'%7D%2C%22pax%22%3A%7B%22adults%22%3A1%7D%2C%22cabin%22%3A%22COACH%22%2C%22changeOfAirport%22%3Afalse%2C%22checkAvailability%22%3Atrue%2C%22firstDayOfWeek%22%3A%22SUNDAY%22%2C%22endDate%22%3A%22' + self.end_date + '%22%2C%22page%22%3A%7B%22size%22%3A30%7D%2C%22sorts%22%3A%22default%22%7D'
-            page = requests.post("http://matrix.itasoftware.com/xhr/shop/search", data=payload, headers=ITADao.headers)
-            text = page.text[4:]
-            #print text
-            data = json.loads(text)
-            flights = data['result']['solutionList']['solutions']
-            return flights
+"""
+Thread that handles the request/response for the Trip data from ITA
+"""
+class TripRequestThread (threading.Thread):
+    #this needs to be refactored. Too many args
+    def __init__(self, dest, outbound, inbound, start, end, min_length, max_length, session, results):
+        threading.Thread.__init__(self)
+        self.results = results
+        self.outbound = outbound
+        self.inbound = inbound
+        self.session = session
+        self.dest = dest
+        self.start_date = start
+        self.end_date = end
+        self.min_length = min_length
+        self.max_length = max_length
+
+    def run(self):
+        trips = self.get_trips(self.outbound, self.inbound, self.session)
+        self.results.append(trips)
+
+
+    """
+    Gets the RT flights for the particular dates
+    """
+    def get_trips(self, leave, ret, session):
+        #need to get the trip length from the calendar and put in max and min
+        payload = 'name=calendarFollowup&session=' + session + '&summarizers=carrierStopMatrix%2CcurrencyNotice%2CsolutionList%2CitineraryPriceSlider%2CitineraryCarrierList%2CitineraryDepartureTimeRanges%2CitineraryArrivalTimeRanges%2CdurationSliderItinerary%2CitineraryOrigins%2CitineraryDestinations%2CitineraryStopCountList%2CwarningsItinerary&format=JSON&inputs=%7B%22slices%22%3A%5B%7B%22origins%22%3A%5B%22ORD%22%5D%2C%22originPreferCity%22%3Afalse%2C%22destinations%22%3A%5B%22' + self.dest + '%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22date%22%3A%22' + leave + '%22%7D%2C%7B%22destinations%22%3A%5B%22ORD%22%5D%2C%22destinationPreferCity%22%3Afalse%2C%22origins%22%3A%5B%22' + self.dest + '%22%5D%2C%22originPreferCity%22%3Afalse%2C%22date%22%3A%22' + ret + '%22%7D%5D%2C%22startDate%22%3A%22' + self.start_date + '%22%2C%22layover%22%3A%7B%22max%22%3A'+self.max_length+'%2C%22min%22%3A'+self.min_length+'%7D%2C%22pax%22%3A%7B%22adults%22%3A1%7D%2C%22cabin%22%3A%22COACH%22%2C%22changeOfAirport%22%3Afalse%2C%22checkAvailability%22%3Atrue%2C%22firstDayOfWeek%22%3A%22SUNDAY%22%2C%22endDate%22%3A%22' + self.end_date + '%22%2C%22page%22%3A%7B%22size%22%3A30%7D%2C%22sorts%22%3A%22default%22%7D'
+        page = requests.post("http://matrix.itasoftware.com/xhr/shop/search", data=payload, headers=ITADao.headers)
+        text = page.text[4:]
+        #print text
+        data = json.loads(text)
+        flights = data['result']['solutionList']['solutions']
+        return flights
 
 
