@@ -17,9 +17,15 @@ print "Enter the ending date of the date range in the format of 2014-12-31"
 end_date = sys.stdin.readline().strip('\n')
 end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
 
+print "Enter the minimum trip length"
+min_length = sys.stdin.readline().strip('\n')
+
+print "Enter the maximum trip length"
+max_length = sys.stdin.readline().strip('\n')
+
 
 for dest in destinations:
-    dao = ITADao(dest, start_date, end_date)
+    dao = ITADao(dest, start_date, end_date, min_length, max_length)
     trips = dao.get_trip_data()
     trips = trips.find_best_value()
     trips = trips.find_cheapest_trips()
