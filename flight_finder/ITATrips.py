@@ -3,29 +3,32 @@ __author__ = 'Brad'
 from Flight import Flight
 from Trip import Trip
 
-"""
-Handles the trip data returned from ITA
-"""
+
 class ITATrips():
+    """
+    Handles the trip data returned from ITA
+    """
     def __init__(self, trips = None):
         if trips is None:
             trips = []
         self.trips = trips
 
-    """
-    Adds the trips inside the json data returned by an ITA trip request.
-    This should only be called if the caller understands the json returned by ITA,
-    thus it is "protected" to the ITA package
-    """
+
     def _add_trips(self, trips):
+        """
+        Adds the trips inside the json data returned by an ITA trip request.
+        This should only be called if the caller understands the json returned by ITA,
+        thus it is "protected" to the ITA package
+        """
         for trip in trips:
             self.trips.append(self.__get_trip(trip))
 
-    """
-    finds all the trips below a specified ppm
-    returns an ITATrips object of only those trips
-    """
+
     def find_trips_below_ppm(self, ppm):
+        """
+        finds all the trips below a specified ppm
+        returns an ITATrips object of only those trips
+        """
         trips = []
         for trip in self.trips:
             if trip.ppm <= ppm:
@@ -33,11 +36,12 @@ class ITATrips():
 
         return ITATrips(trips)
 
-    """
-    finds all the trips below a specified price
-    returns an ITATrips object of only those trips
-    """
+
     def find_trips_below_price(self, max_price):
+        """
+        finds all the trips below a specified price
+        returns an ITATrips object of only those trips
+        """
         trips = []
         for trip in self.trips:
             if trip.price <= max_price:
@@ -45,11 +49,13 @@ class ITATrips():
 
         return ITATrips(trips)
 
-    """
-    finds all the trips equal to the lowest price
-    returns an ITATrips object of only those trips
-    """
+
     def find_cheapest_trips(self):
+        """
+        finds all the trips equal to the lowest price
+        returns an ITATrips object of only those trips
+        """
+
         #sort the list by price
         trips = sorted(self.trips, key=lambda trip: trip.price)
 
@@ -65,11 +71,13 @@ class ITATrips():
         return ITATrips(cheapest)
 
 
-    """
-    find all the trips that equal the lowest ppm
-    returns an ITATrips object of only those trips
-    """
+
     def find_best_value(self):
+        """
+        find all the trips that equal the lowest ppm
+        returns an ITATrips object of only those trips
+        """
+
         #sort the list by ppm
         trips = sorted(self.trips, key=lambda trip: trip.ppm)
 
@@ -84,17 +92,18 @@ class ITATrips():
 
         return ITATrips(best)
 
-    """
-    returns a list of all the trips
-    """
+
     def get_trips(self):
+        """
+        returns a list of all the trips
+        """
         return self.trips
 
-    """
-    Gets the trip information out of the json returned from ITA
-    This should only be called if the caller understands the json returned by ITA
-    """
     def __get_trip(self, trip):
+        """
+        Gets the trip information out of the json returned from ITA
+        This should only be called if the caller understands the json returned by ITA
+        """
         price = float(trip['ext']['price'][3:])
         ppm = float(trip['ext']['pricePerMile'][3:])
         ppm = round(ppm, 4)

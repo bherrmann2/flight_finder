@@ -4,7 +4,6 @@ import datetime
 import sys
 from ITADao import ITADao
 
-
 print "Enter in your destinations separated by a comma. ie. HKG,PEK"
 destinations = sys.stdin.readline().strip('\n')
 destinations = destinations.split(',')

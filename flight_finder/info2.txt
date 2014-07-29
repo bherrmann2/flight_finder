@@ -275,6 +275,238 @@ endDate%22%3A%22INSERT END DATE%22%2C%22page%22%3A%7B%22size%22%3A30%7D%2C%22sor
             ]
         }
     ],
-    "priceSliderSlice":{"maxPrice":"USD7346.00","minPrice":"USD966.00","groups":[{"label":{"end":"USD1030.00","start":"USD966.00"}},{"label":{"end":"USD1222.00","start":"USD1158.00"}},{"label":{"end":"USD1350.00","start":"USD1286.00"}},{"label":{"end":"USD1478.00","start":"USD1414.00"}},{"label":{"end":"USD1542.00","start":"USD1478.00"}},{"label":{"end":"USD1606.00","start":"USD1542.00"}},{"label":{"end":"USD1670.00","start":"USD1606.00"}},{"label":{"end":"USD1734.00","start":"USD1670.00"}},{"label":{"end":"USD1798.00","start":"USD1734.00"}},{"label":{"end":"USD1862.00","start":"USD1798.00"}},{"label":{"end":"USD1926.00","start":"USD1862.00"}},{"label":{"end":"USD1990.00","start":"USD1926.00"}},{"label":{"end":"USD2054.00","start":"USD1990.00"}},{"label":{"end":"USD2118.00","start":"USD2054.00"}},{"label":{"end":"USD2182.00","start":"USD2118.00"}},{"label":{"end":"USD2246.00","start":"USD2182.00"}},{"label":{"end":"USD2310.00","start":"USD2246.00"}},{"label":{"end":"USD2374.00","start":"USD2310.00"}},{"label":{"end":"USD2438.00","start":"USD2374.00"}},{"label":{"end":"USD2566.00","start":"USD2502.00"}},{"label":{"end":"USD2694.00","start":"USD2630.00"}},{"label":{"end":"USD2758.00","start":"USD2694.00"}},{"label":{"end":"USD2822.00","start":"USD2758.00"}},{"label":{"end":"USD2950.00","start":"USD2886.00"}},{"label":{"end":"USD3014.00","start":"USD2950.00"}},{"label":{"end":"USD3078.00","start":"USD3014.00"}},{"label":{"end":"USD3398.00","start":"USD3334.00"}},{"label":{"end":"USD3718.00","start":"USD3654.00"}},{"label":{"end":"USD3846.00","start":"USD3782.00"}},{"label":{"end":"USD4038.00","start":"USD3974.00"}},{"label":{"end":"USD4230.00","start":"USD4166.00"}},{"label":{"end":"USD4422.00","start":"USD4358.00"}},{"label":{"end":"USD4486.00","start":"USD4422.00"}},{"label":{"end":"USD4614.00","start":"USD4550.00"}},{"label":{"end":"USD4678.00","start":"USD4614.00"}},{"label":{"end":"USD4934.00","start":"USD4870.00"}},{"label":{"end":"USD5062.00","start":"USD4998.00"}},{"label":{"end":"USD5190.00","start":"USD5126.00"}},{"label":{"end":"USD5254.00","start":"USD5190.00"}},{"label":{"end":"USD5382.00","start":"USD5318.00"}},{"label":{"end":"USD5510.00","start":"USD5446.00"}},{"label":{"end":"USD5766.00","start":"USD5702.00"}},{"label":{"end":"USD5894.00","start":"USD5830.00"}},{"label":{"end":"USD6022.00","start":"USD5958.00"}},{"label":{"end":"USD6406.00","start":"USD6342.00"}},{"label":{"end":"USD6534.00","start":"USD6470.00"}},{"label":{"end":"USD6598.00","start":"USD6534.00"}},{"label":{"end":"USD6790.00","start":"USD6726.00"}},{"label":{"end":"USD7366.00","start":"USD7302.00"}}]},"carrierListSlice":[{"index":0,"groups":[{"minPrice":"USD1796.00","label":{"code":"AC","shortName":"Air Canada"}},{"minPrice":"USD2656.00","label":{"code":"CA","shortName":"Air China Limited"}},{"minPrice":"USD2981.00","label":{"code":"AI","shortName":"Air India Limited"}},{"minPrice":"USD1780.00","label":{"code":"NH","shortName":"All Nippon Airways Co. Ltd."}},{"minPrice":"USD1803.00","label":{"code":"AA","shortName":"American Airlines Inc."}},{"minPrice":"USD2223.00","label":{"code":"OZ","shortName":"Asiana Airlines Inc."}},{"minPrice":"USD2996.00","label":{"code":"BA","shortName":"British Airways p.l.c."}},{"minPrice":"USD1563.00","label":{"code":"CX","shortName":"Cathay Pacific Airways Ltd."}},{"minPrice":"USD2419.00","label":{"code":"DL","shortName":"Delta Air Lines Inc."}},{"minPrice":"USD2278.00","label":{"code":"LH","shortName":"Deutsche Lufthansa AG"}},{"minPrice":"USD1531.00","label":{"code":"EK","shortName":"Emirates"}},{"minPrice":"USD4000.00","label":{"code":"EY","shortName":"Etihad Airways"}},{"minPrice":"USD2253.00","label":{"code":"JL","shortName":"Japan Airlines International Co., Ltd."}},{"minPrice":"USD1630.00","label":{"code":"KE","shortName":"Korean Air Lines Co. Ltd."}},{"minPrice":"USD2288.00","label":{"code":"QR","shortName":"Qatar Airways(Q.C.S.C)"}},{"minPrice":"USD3836.00","label":{"code":"SQ","shortName":"Singapore Airlines Limited"}},{"minPrice":"USD2234.00","label":{"code":"LX","shortName":"SWISS"}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"code":"UA","shortName":"United Airlines, Inc."}},{"minPrice":"USD3022.00","label":{"code":"US","shortName":"US Airways, Inc."}}]}],"departureTimeRangesSlice":[{"index":0,"groups":[{"minPrice":"USD1563.00","label":{"end":"08:00","start":"00:00"}},{"minPrice":"USD1563.00","label":{"end":"11:00","start":"08:00"}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":"14:00","start":"11:00"}},{"minPrice":"USD1672.00","label":{"end":"17:00","start":"14:00"}},{"minPrice":"USD1531.00","label":{"end":"21:00","start":"17:00"}},{"minPrice":"USD1796.00","label":{"end":"23:59","start":"21:00"}}]}],"arrivalTimeRangesSlice":[{"index":0,"groups":[{"minPrice":"USD1166.00","label":{"end":"08:00","start":"00:00"}},{"minPrice":"USD4000.00","label":{"end":"11:00","start":"08:00"}},{"label":{"end":"14:00","start":"11:00"}},{"minPrice":"USD1579.00","label":{"end":"17:00","start":"14:00"}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":"21:00","start":"17:00"}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":"23:59","start":"21:00"}}]}],"durationSliderSlice":[{"index":0,"maxDuration":3370,"minDuration":950,"groups":[{"minPrice":"USD1751.00","label":{"end":973,"start":948}},{"minPrice":"USD4221.00","label":{"end":1123,"start":1098}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":1148,"start":1123}},{"minPrice":"USD1563.00","label":{"end":1198,"start":1173}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":1223,"start":1198}},{"minPrice":"USD1970.00","label":{"end":1248,"start":1223}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":1273,"start":1248}},{"minPrice":"USD1630.00","label":{"end":1298,"start":1273}},{"minPrice":"USD1672.00","label":{"end":1323,"start":1298}},{"minPrice":"USD1563.00","label":{"end":1348,"start":1323}},{"minPrice":"USD1166.00","label":{"end":1373,"start":1348}},{"minPrice":"USD1972.00","label":{"end":1398,"start":1373}},{"minPrice":"USD1672.00","label":{"end":1448,"start":1423}},{"minPrice":"USD2247.00","label":{"end":1473,"start":1448}},{"minPrice":"USD1672.00","label":{"end":1498,"start":1473}},{"minPrice":"USD4376.00","label":{"end":1598,"start":1573}},{"minPrice":"USD2981.00","label":{"end":1623,"start":1598}},{"minPrice":"USD1796.00","label":{"end":1673,"start":1648}},{"minPrice":"USD1796.00","label":{"end":1698,"start":1673}},{"minPrice":"USD1579.00","label":{"end":1723,"start":1698}},{"minPrice":"USD4376.00","label":{"end":1773,"start":1748}},{"minPrice":"USD1796.00","label":{"end":1823,"start":1798}},{"minPrice":"USD2996.00","label":{"end":1873,"start":1848}},{"minPrice":"USD1780.00","label":{"end":1898,"start":1873}},{"minPrice":"USD2234.00","label":{"end":1948,"start":1923}},{"minPrice":"USD2292.00","label":{"end":2073,"start":2048}},{"minPrice":"USD1531.00","label":{"end":2123,"start":2098}},{"minPrice":"USD4000.00","label":{"end":2873,"start":2848}},{"minPrice":"USD2278.00","label":{"end":3373,"start":3348}}]}],"originsSlice":[{"index":0,"groups":[{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"code":"ORD","name":"Chicago O\u0027Hare"}}]}],"destinationsSlice":[{"index":0,"groups":[{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"code":"HKG","name":"Hong Kong International"}}]}],"stopCountListSlice":[{"index":0,"groups":[{"label":0,"minPrice":"USD1751.00"},{"label":1,"minPrice":"USD966.00","minPriceInSummary":true}]}],"warningsSlice":[{"index":0,"groups":[{"label":"CHANGE_OF_TERMINAL","minPrice":"USD1563.00"},{"label":"LONG_LAYOVER","minPrice":"USD1166.00"},{"label":"OVERNIGHT","minPrice":"USD1531.00"},{"label":"RISKY_CONNECTION","minPrice":"USD1845.00"}]}]}}
+    "priceSliderSlice":{"maxPrice":"USD7346.00","minPrice":"USD966.00","groups":[{"label":{"end":"USD1030.00","start":"USD966.00"}},{"label":{"end":"USD1222.00","start":"USD1158.00"}},{"label":{"end":"USD1350.00","start":"USD1286.00"}},{"label":{"end":"USD1478.00","start":"USD1414.00"}},{"label":{"end":"USD1542.00","start":"USD1478.00"}},{"label":{"end":"USD1606.00","start":"USD1542.00"}},{"label":{"end":"USD1670.00","start":"USD1606.00"}},{"label":{"end":"USD1734.00","start":"USD1670.00"}},{"label":{"end":"USD1798.00","start":"USD1734.00"}},{"label":{"end":"USD1862.00","start":"USD1798.00"}},{"label":{"end":"USD1926.00","start":"USD1862.00"}},{"label":{"end":"USD1990.00","start":"USD1926.00"}},{"label":{"end":"USD2054.00","start":"USD1990.00"}},{"label":{"end":"USD2118.00","start":"USD2054.00"}},{"label":{"end":"USD2182.00","start":"USD2118.00"}},{"label":{"end":"USD2246.00","start":"USD2182.00"}},{"label":{"end":"USD2310.00","start":"USD2246.00"}},{"label":{"end":"USD2374.00","start":"USD2310.00"}},{"label":{"end":"USD2438.00","start":"USD2374.00"}},{"label":{"end":"USD2566.00","start":"USD2502.00"}},{"label":{"end":"USD2694.00","start":"USD2630.00"}},{"label":{"end":"USD2758.00","start":"USD2694.00"}},{"label":{"end":"USD2822.00","start":"USD2758.00"}},{"label":{"end":"USD2950.00","start":"USD2886.00"}},{"label":{"end":"USD3014.00","start":"USD2950.00"}},{"label":{"end":"USD3078.00","start":"USD3014.00"}},{"label":{"end":"USD3398.00","start":"USD3334.00"}},{"label":{"end":"USD3718.00","start":"USD3654.00"}},{"label":{"end":"USD3846.00","start":"USD3782.00"}},{"label":{"end":"USD4038.00","start":"USD3974.00"}},{"label":{"end":"USD4230.00","start":"USD4166.00"}},{"label":{"end":"USD4422.00","start":"USD4358.00"}},{"label":{"end":"USD4486.00","start":"USD4422.00"}},{"label":{"end":"USD4614.00","start":"USD4550.00"}},{"label":{"end":"USD4678.00","start":"USD4614.00"}},{"label":{"end":"USD4934.00","start":"USD4870.00"}},{"label":{"end":"USD5062.00","start":"USD4998.00"}},{"label":{"end":"USD5190.00","start":"USD5126.00"}},{"label":{"end":"USD5254.00","start":"USD5190.00"}},{"label":{"end":"USD5382.00","start":"USD5318.00"}},{"label":{"end":"USD5510.00","start":"USD5446.00"}},{"label":{"end":"USD5766.00","start":"USD5702.00"}},{"label":{"end":"USD5894.00","start":"USD5830.00"}},{"label":{"end":"USD6022.00","start":"USD5958.00"}},{"label":{"end":"USD6406.00","start":"USD6342.00"}},{"label":{"end":"USD6534.00","start":"USD6470.00"}},{"label":{"end":"USD6598.00","start":"USD6534.00"}},{"label":{"end":"USD6790.00","start":"USD6726.00"}},{"label":{"end":"USD7366.00","start":"USD7302.00"}}]}
+    ,"carrierListSlice":[{"index":0,"groups":[{"minPrice":"USD1796.00","label":{"code":"AC","shortName":"Air Canada"}},{"minPrice":"USD2656.00","label":{"code":"CA","shortName":"Air China Limited"}},{"minPrice":"USD2981.00","label":{"code":"AI","shortName":"Air India Limited"}},{"minPrice":"USD1780.00","label":{"code":"NH","shortName":"All Nippon Airways Co. Ltd."}},{"minPrice":"USD1803.00","label":{"code":"AA","shortName":"American Airlines Inc."}},{"minPrice":"USD2223.00","label":{"code":"OZ","shortName":"Asiana Airlines Inc."}},{"minPrice":"USD2996.00","label":{"code":"BA","shortName":"British Airways p.l.c."}},{"minPrice":"USD1563.00","label":{"code":"CX","shortName":"Cathay Pacific Airways Ltd."}},{"minPrice":"USD2419.00","label":{"code":"DL","shortName":"Delta Air Lines Inc."}},{"minPrice":"USD2278.00","label":{"code":"LH","shortName":"Deutsche Lufthansa AG"}},{"minPrice":"USD1531.00","label":{"code":"EK","shortName":"Emirates"}},{"minPrice":"USD4000.00","label":{"code":"EY","shortName":"Etihad Airways"}},{"minPrice":"USD2253.00","label":{"code":"JL","shortName":"Japan Airlines International Co., Ltd."}},{"minPrice":"USD1630.00","label":{"code":"KE","shortName":"Korean Air Lines Co. Ltd."}},{"minPrice":"USD2288.00","label":{"code":"QR","shortName":"Qatar Airways(Q.C.S.C)"}},{"minPrice":"USD3836.00","label":{"code":"SQ","shortName":"Singapore Airlines Limited"}},{"minPrice":"USD2234.00","label":{"code":"LX","shortName":"SWISS"}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"code":"UA","shortName":"United Airlines, Inc."}},{"minPrice":"USD3022.00","label":{"code":"US","shortName":"US Airways, Inc."}}]}],
+    "departureTimeRangesSlice":[{"index":0,"groups":[{"minPrice":"USD1563.00","label":{"end":"08:00","start":"00:00"}},{"minPrice":"USD1563.00","label":{"end":"11:00","start":"08:00"}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":"14:00","start":"11:00"}},{"minPrice":"USD1672.00","label":{"end":"17:00","start":"14:00"}},{"minPrice":"USD1531.00","label":{"end":"21:00","start":"17:00"}},{"minPrice":"USD1796.00","label":{"end":"23:59","start":"21:00"}}]}],
+    "arrivalTimeRangesSlice":[{"index":0,"groups":[{"minPrice":"USD1166.00","label":{"end":"08:00","start":"00:00"}},{"minPrice":"USD4000.00","label":{"end":"11:00","start":"08:00"}},{"label":{"end":"14:00","start":"11:00"}},{"minPrice":"USD1579.00","label":{"end":"17:00","start":"14:00"}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":"21:00","start":"17:00"}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":"23:59","start":"21:00"}}]}],
+    "durationSliderSlice":[{"index":0,"maxDuration":3370,"minDuration":950,"groups":[{"minPrice":"USD1751.00","label":{"end":973,"start":948}},{"minPrice":"USD4221.00","label":{"end":1123,"start":1098}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":1148,"start":1123}},{"minPrice":"USD1563.00","label":{"end":1198,"start":1173}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":1223,"start":1198}},{"minPrice":"USD1970.00","label":{"end":1248,"start":1223}},{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"end":1273,"start":1248}},{"minPrice":"USD1630.00","label":{"end":1298,"start":1273}},{"minPrice":"USD1672.00","label":{"end":1323,"start":1298}},{"minPrice":"USD1563.00","label":{"end":1348,"start":1323}},{"minPrice":"USD1166.00","label":{"end":1373,"start":1348}},{"minPrice":"USD1972.00","label":{"end":1398,"start":1373}},{"minPrice":"USD1672.00","label":{"end":1448,"start":1423}},{"minPrice":"USD2247.00","label":{"end":1473,"start":1448}},{"minPrice":"USD1672.00","label":{"end":1498,"start":1473}},{"minPrice":"USD4376.00","label":{"end":1598,"start":1573}},{"minPrice":"USD2981.00","label":{"end":1623,"start":1598}},{"minPrice":"USD1796.00","label":{"end":1673,"start":1648}},{"minPrice":"USD1796.00","label":{"end":1698,"start":1673}},{"minPrice":"USD1579.00","label":{"end":1723,"start":1698}},{"minPrice":"USD4376.00","label":{"end":1773,"start":1748}},{"minPrice":"USD1796.00","label":{"end":1823,"start":1798}},{"minPrice":"USD2996.00","label":{"end":1873,"start":1848}},{"minPrice":"USD1780.00","label":{"end":1898,"start":1873}},{"minPrice":"USD2234.00","label":{"end":1948,"start":1923}},{"minPrice":"USD2292.00","label":{"end":2073,"start":2048}},{"minPrice":"USD1531.00","label":{"end":2123,"start":2098}},{"minPrice":"USD4000.00","label":{"end":2873,"start":2848}},{"minPrice":"USD2278.00","label":{"end":3373,"start":3348}}]}],
+    "originsSlice":[{"index":0,"groups":[{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"code":"ORD","name":"Chicago O\u0027Hare"}}]}],"destinationsSlice":[{"index":0,"groups":[{"minPrice":"USD966.00","minPriceInSummary":true,"label":{"code":"HKG","name":"Hong Kong International"}}]}],"stopCountListSlice":[{"index":0,"groups":[{"label":0,"minPrice":"USD1751.00"},{"label":1,"minPrice":"USD966.00","minPriceInSummary":true}]}],"warningsSlice":[{"index":0,"groups":[{"label":"CHANGE_OF_TERMINAL","minPrice":"USD1563.00"},{"label":"LONG_LAYOVER","minPrice":"USD1166.00"},{"label":"OVERNIGHT","minPrice":"USD1531.00"},{"label":"RISKY_CONNECTION","minPrice":"USD1845.00"}]}]}}
 
 """
+
+
+//third request - clicking the down arrow to get trip details
+{
+    "result": {
+        "id": "HzbYWjRZwKSIDRz4K0KNNh",
+        "itineraryInlineDetails": {
+            "displayTotal": "USD1143.40",
+            "ext": {
+                "price": "USD1144.00",
+                "pricePerMile": "USD0.0734557596",
+                "totalPrice": "USD1143.40"
+            },
+            "itinerary": {
+                "distance": {
+                    "units": "MI",
+                    "value": 15574
+                },
+                "slices": [
+                    {
+                        "arrival": "2014-12-27T20:50+08:00",
+                        "departure": "2014-12-26T12:00-06:00",
+                        "destination": {
+                            "city": {
+                                "name": "Hong Kong"
+                            },
+                            "code": "HKG"
+                        },
+                        "origin": {
+                            "city": {
+                                "name": "Chicago"
+                            },
+                            "code": "ORD"
+                        },
+                        "segments": [
+                            {
+                                "bookingInfos": [
+                                    {
+                                        "bookingCode": "L",
+                                        "cabin": "COACH"
+                                    }
+                                ],
+                                "carrier": {
+                                    "code": "UA",
+                                    "shortName": "United Airlines, Inc."
+                                },
+                                "connection": {
+                                    "duration": 120
+                                },
+                                "flight": {
+                                    "number": 851
+                                },
+                                "legs": [
+                                    {
+                                        "aircraft": {
+                                            "shortName": "Boeing 747"
+                                        },
+                                        "arrival": "2014-12-27T15:30+08:00",
+                                        "departure": "2014-12-26T12:00-06:00",
+                                        "destination": {
+                                            "city": {
+                                                "name": "Beijing"
+                                            },
+                                            "code": "PEK"
+                                        },
+                                        "duration": 810,
+                                        "origin": {
+                                            "city": {
+                                                "name": "Chicago"
+                                            },
+                                            "code": "ORD"
+                                        },
+                                        "services": [
+                                            {
+                                                "amenities": [
+                                                    "Non-smoking"
+                                                ],
+                                                "meals": [
+                                                    "Lunch"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "origin": "ORD"
+                            },
+                            {
+                                "bookingInfos": [
+                                    {
+                                        "bookingCode": "S",
+                                        "cabin": "COACH"
+                                    }
+                                ],
+                                "carrier": {
+                                    "code": "KA",
+                                    "shortName": "Dragonair"
+                                },
+                                "codeshare": true,
+                                "ext": {
+                                    "operationalDisclosure": "OPERATED BY AIR CHINA LIMITED"
+                                },
+                                "flight": {
+                                    "number": 1117
+                                },
+                                "legs": [
+                                    {
+                                        "aircraft": {
+                                            "shortName": "Airbus A321"
+                                        },
+                                        "arrival": "2014-12-27T20:50+08:00",
+                                        "departure": "2014-12-27T17:30+08:00",
+                                        "destination": {
+                                            "city": {
+                                                "name": "Hong Kong"
+                                            },
+                                            "code": "HKG"
+                                        },
+                                        "duration": 200,
+                                        "origin": {
+                                            "city": {
+                                                "name": "Beijing"
+                                            },
+                                            "code": "PEK"
+                                        },
+                                        "services": [
+                                            {
+                                                "amenities": [
+                                                    "Non-smoking"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "origin": "PEK"
+                            }
+                        ],
+                        "stopCount": 1
+                    },
+                    {
+                        "arrival": "2014-12-30T11:45-06:00",
+                        "departure": "2014-12-30T11:10+08:00",
+                        "destination": {
+                            "city": {
+                                "name": "Chicago"
+                            },
+                            "code": "ORD"
+                        },
+                        "ext": {
+                            "warnings": "OVERNIGHT"
+                        },
+                        "origin": {
+                            "city": {
+                                "name": "Hong Kong"
+                            },
+                            "code": "HKG"
+                        },
+                        "segments": [
+                            {
+                                "bookingInfos": [
+                                    {
+                                        "bookingCode": "L",
+                                        "cabin": "COACH"
+                                    }
+                                ],
+                                "carrier": {
+                                    "code": "UA",
+                                    "shortName": "United Airlines, Inc."
+                                },
+                                "flight": {
+                                    "number": 896
+                                },
+                                "legs": [
+                                    {
+                                        "aircraft": {
+                                            "shortName": "Boeing 777"
+                                        },
+                                        "arrival": "2014-12-30T11:45-06:00",
+                                        "departure": "2014-12-30T11:10+08:00",
+                                        "destination": {
+                                            "city": {
+                                                "name": "Chicago"
+                                            },
+                                            "code": "ORD"
+                                        },
+                                        "duration": 875,
+                                        "origin": {
+                                            "city": {
+                                                "name": "Hong Kong"
+                                            },
+                                            "code": "HKG"
+                                        },
+                                        "services": [
+                                            {
+                                                "amenities": [
+                                                    "Non-smoking"
+                                                ],
+                                                "meals": [
+                                                    "Lunch"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "origin": "HKG"
+                            }
+                        ],
+                        "stopCount": 0
+                    }
+                ]
+            },
+            "passengerCount": 1,
+            "pricings": [
+                {
+                    "displayPrice": "USD1143.40",
+                    "ext": {
+                        "pax": {
+                            "adults": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "session": "8Fs0KNNPyAw44yp0NgdKlPt2j",
+        "solutionCount": 500,
+        "solutionSet": "0Ie29X1ebi30QSzz7vHdk3B"
+    }
+}
