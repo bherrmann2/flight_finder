@@ -4,6 +4,9 @@ import datetime
 import sys
 from ITADao import ITADao
 
+print "Enter your origin ie. ORD"
+origin = sys.stdin.readline().strip('\n')
+
 print "Enter in your destinations separated by a comma. ie. HKG,PEK"
 destinations = sys.stdin.readline().strip('\n')
 destinations = destinations.split(',')
@@ -24,7 +27,7 @@ max_length = sys.stdin.readline().strip('\n')
 
 
 for dest in destinations:
-    dao = ITADao(dest, start_date, end_date, min_length, max_length)
+    dao = ITADao(origin, dest, start_date, end_date, min_length, max_length)
     trips = dao.get_trip_data()
     trips = trips.find_best_value()
     trips = trips.find_cheapest_trips()
