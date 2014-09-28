@@ -6,3 +6,10 @@ Its purpose is to make it easier to find cheap flights with no specific destinat
 to run:
 python FlightFinder.py
 then follow the prompts
+
+TODO:
+
+Make a RESTful API
+Setup a DB to cache results
+support multi destination
+clean up and provide better output for matching trips

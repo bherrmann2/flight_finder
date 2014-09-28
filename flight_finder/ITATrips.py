@@ -54,6 +54,8 @@ class ITATrips():
         trips = sorted(self.trips, key=lambda trip: trip.price)
 
         cheapest = []
+        if len(trips) == 0:
+            return ITATrips(cheapest)
         lowest = trips[0]
         for trip in trips:
             #find all trips that equal the cheapest

@@ -19,9 +19,14 @@ class ITACalendar:
     pair matching the cheapest round trip. The days are in string format
     """
     def find_cheapest_rt(self):
-        calendar = self.data["result"]["calendar"]
-        minPrice = self.get_lowest_price()
         cheapest_dates = []
+        calendar = ""
+        try:
+            calendar = self.data["result"]["calendar"]
+        except KeyError:
+                print "Error. No results"
+                return cheapest_dates
+        minPrice = self.get_lowest_price()
         for month in calendar["months"]:
             year = month["year"]
             the_month = month["month"]

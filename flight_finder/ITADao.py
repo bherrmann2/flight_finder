@@ -143,7 +143,11 @@ class TripRequestThread (threading.Thread):
         text = page.text[4:]
         #print text
         data = json.loads(text)
-        flights = data['result']['solutionList']['solutions']
-        return flights
+        try:
+            flights = data['result']['solutionList']['solutions']
+            return flights
+        except KeyError:
+            print "Error. Couldn't get trip info"
+            return []
 
 
