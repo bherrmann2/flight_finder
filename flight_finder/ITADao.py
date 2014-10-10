@@ -8,7 +8,42 @@ from ITACalendar import ITACalendar
 from ITATrips import ITATrips
 from FlightRequest import FlightRequest, FlightRequestCollection
 from collections import OrderedDict
-import urllib
+
+class ITARequest(object):
+    """
+    Handles XmlHttpRequests for ITA matrix. Use this for some fault tolerance.
+    Sometimes ITA returns this garbage:
+    {"error":{"message":"QPX capacity exceeded.","code":"qpxBusy","resultId":"m8MSFAUAaueRBBCFK0Kog0","type":"internal"}}
+    """
+    def __init__(self, timeout=datetime.timedelta(minutes=1)):
+        # Make sure it's a valid timeout
+        assert type(timeout) is datetime.timedelta, "Must specify a valid timeout"
+        self.timeout = timeout
+    
+    def post_request(self, url, payload, headers):
+        start_time = datetime.datetime.now()
+        curr_time = start_time
+        elapsed_time = curr_time - start_time
+        success = False
+        
+        data = None
+        while not success and elapsed_time < self.timeout:
+            print "Elapsed time: {0} seconds".format(elapsed_time.seconds)
+            page = requests.post(url, data=payload, headers=headers)
+            text = page.text[4:]
+            print text
+            data = json.loads(text)
+            
+            if 'error' in data:
+                assert data['error']['code'] == 'qpxBusy', "Unrecoverable error: {0}".format(data['error']['message'])
+            else:
+                success = True
+            
+            # Get the current time
+            curr_time = datetime.datetime.now()
+            elapsed_time = curr_time - start_time
+        
+        return data
 
 """
 Retrieves the trip information from ITA Software
@@ -150,18 +185,13 @@ class MultiDestinationRequestThread(threading.Thread):
         commands['summarizers'] = '%2C'.join(summarizers)
         commands['format'] = 'JSON'
         commands['inputs'] = json.dumps(self.flight_requests.to_json())
-        #commands['inputs'] = urllib.quote_plus('{"slices":[{"origins":["MIL","FCO","PSA","BLQ","VCE"],"originPreferCity":false,"routeLanguage":"X+","destinations":["SEA"],"destinationPreferCity":true,"date":"2014-10-21","isArrivalDate":false,"dateModifier":{"minus":2,"plus":2}},{"destinations":["MIL","FCO","PSA","BLQ","VCE"],"destinationPreferCity":false,"origins":["SEA"],"originPreferCity":true,"date":"2014-11-07","isArrivalDate":false,"dateModifier":{"minus":1,"plus":1}}],"pax":{"adults":3,"children":1,"seniors":1,"infantsInSeat":1,"youth":1,"infantsInLap":1},"cabin":"COACH","maxStopCount":2,"changeOfAirport":true,"checkAvailability":true,"currency":"USD","salesCity":"SEA","page":{"size":30},"sorts":"default"}')
-        
-        print self.flight_requests.to_json()
         
         payload = '&'.join(['{0}={1}'.format(key,value) for key, value in commands.iteritems()])
-        
-        print payload
             
-        page = requests.post(ITADao.url, data=payload, headers=ITADao.headers)
-        text = page.text[4:]
-        print text
-        data = json.loads(text)
+        request = ITARequest()
+        data = request.post_request(ITADao.url, payload, ITADao.headers)
+        #page = requests.post(ITADao.url, data=payload, headers=ITADao.headers)
+
         try:
             flights = data['result']['solutionList']['solutions']
             return flights

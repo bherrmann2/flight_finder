@@ -33,7 +33,6 @@ dao.add_specific_flight(origins=origin, destinations=destinations, depart_date=s
 dao.add_specific_flight(origins=destinations, destinations='PHX', depart_date='2014-11-01', date_minus=1, date_plus=1, command_line='alliance oneworld')
 dao.add_specific_flight(origins='PHX', destinations=origin, depart_date=end_date, date_minus=1, date_plus=1, command_line='alliance oneworld')
 
-print dao.flight_requests.flights
 trips = dao.get_trip_data()
 trips = trips.find_best_value()
 trips = trips.find_cheapest_trips()
