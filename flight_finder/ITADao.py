@@ -149,12 +149,10 @@ class MultiDestinationRequestThread(threading.Thread):
         commands['name'] = 'specificDates'
         commands['summarizers'] = '%2C'.join(summarizers)
         commands['format'] = 'JSON'
-        #commands['inputs'] = json.dumps(self.flight_requests.to_json())
-        commands['inputs'] = urllib.quote_plus('{"slices":[{"origins":["MIL","FCO","PSA","BLQ","VCE"],"originPreferCity":false,"routeLanguage":"X+","destinations":["SEA"],"destinationPreferCity":true,"date":"2014-10-21","isArrivalDate":false,"dateModifier":{"minus":2,"plus":2}},{"destinations":["MIL","FCO","PSA","BLQ","VCE"],"destinationPreferCity":false,"origins":["SEA"],"originPreferCity":true,"date":"2014-11-07","isArrivalDate":false,"dateModifier":{"minus":1,"plus":1}}],"pax":{"adults":3,"children":1,"seniors":1,"infantsInSeat":1,"youth":1,"infantsInLap":1},"cabin":"COACH","maxStopCount":2,"changeOfAirport":true,"checkAvailability":true,"currency":"USD","salesCity":"SEA","page":{"size":30},"sorts":"default"}')
+        commands['inputs'] = json.dumps(self.flight_requests.to_json())
+        #commands['inputs'] = urllib.quote_plus('{"slices":[{"origins":["MIL","FCO","PSA","BLQ","VCE"],"originPreferCity":false,"routeLanguage":"X+","destinations":["SEA"],"destinationPreferCity":true,"date":"2014-10-21","isArrivalDate":false,"dateModifier":{"minus":2,"plus":2}},{"destinations":["MIL","FCO","PSA","BLQ","VCE"],"destinationPreferCity":false,"origins":["SEA"],"originPreferCity":true,"date":"2014-11-07","isArrivalDate":false,"dateModifier":{"minus":1,"plus":1}}],"pax":{"adults":3,"children":1,"seniors":1,"infantsInSeat":1,"youth":1,"infantsInLap":1},"cabin":"COACH","maxStopCount":2,"changeOfAirport":true,"checkAvailability":true,"currency":"USD","salesCity":"SEA","page":{"size":30},"sorts":"default"}')
         
-        print self.flight_requests
         print self.flight_requests.to_json()
-        print commands['inputs']
         
         payload = '&'.join(['{0}={1}'.format(key,value) for key, value in commands.iteritems()])
         
