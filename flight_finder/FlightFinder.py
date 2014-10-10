@@ -27,8 +27,9 @@ max_length = sys.stdin.readline().strip('\n')
 
 
 for dest in destinations:
-    dao = ITADao(origin, dest, start_date, end_date, min_length, max_length)
-    trips = dao.get_trip_data()
+    dao = ITADao()
+    dao.set_calendar_query(origin, dest, start_date, end_date, min_length, max_length)
+    trips = dao.get_calendar_trip_data()
     trips = trips.find_best_value()
     trips = trips.find_cheapest_trips()
     tlist = trips.get_trips()
